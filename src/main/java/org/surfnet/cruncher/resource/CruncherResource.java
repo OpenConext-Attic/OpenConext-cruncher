@@ -53,12 +53,20 @@ public class CruncherResource {
                          HttpServletRequest request, @PathParam("idpEntityId")
                          String idpEntityId) {
 
-    String owner = getClientId(request);
+//    String owner = getClientId(request);
     final List<Object> stats = new ArrayList<Object>();
 
-    LOG.debug("About to return all stats for client {}", owner);
+    LOG.debug("About to return all stats for client {}"); //, owner);
 
     return Response.ok(stats).build();
+  }
+  
+  @GET
+  @Path("statistics/{idpEntityId}/{userId}")
+  public Response getActiveSpsForUser(@Context HttpServletRequest request, 
+      @PathParam("idpEntityId") String idpEntityId,
+      @PathParam("userId") String userId) {
+    return null;
   }
 
   protected String getClientId(HttpServletRequest request) {
