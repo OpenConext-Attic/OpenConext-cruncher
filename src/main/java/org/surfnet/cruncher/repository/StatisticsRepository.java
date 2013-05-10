@@ -20,6 +20,7 @@ package org.surfnet.cruncher.repository;
 
 import org.surfnet.cruncher.model.LoginData;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 public interface StatisticsRepository {
@@ -38,5 +39,18 @@ public interface StatisticsRepository {
    * @return List of {@link LoginData}
    */
   List<LoginData> getLoginsPerSpPerDay();
+  
+  /**
+   * Makes a list of unique logins per SP and/or Idp. The login should fall
+   * between start en end time stamp. Start en end timestamps are required
+   * and one of idp and sp is required (or both).
+   * 
+   * @param start start time
+   * @param end end time
+   * @param spEntityId sp entity id
+   * @param idpEntityId idp entity id
+   * @return List of {@link LoginData}
+   */
+  List<LoginData> getUniqueLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId);
 
 }

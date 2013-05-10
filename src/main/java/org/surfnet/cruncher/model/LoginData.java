@@ -27,8 +27,7 @@ public class LoginData {
   private String idpname;
   private String spEntityId;
   private String idpEntityId;
-  private long pointStart;
-  private long pointEnd;
+  private long loginTime;
   private List<Integer> data;
   
   public String getSpName() {
@@ -63,20 +62,12 @@ public class LoginData {
     this.idpEntityId = idpEntityId;
   }
   
-  public long getPointStart() {
-    return pointStart;
+  public long getLoginTime() {
+    return loginTime;
   }
   
-  public void setPointStart(long pointStart) {
-    this.pointStart = pointStart;
-  }
-  
-  public long getPointEnd() {
-    return pointEnd;
-  }
-  
-  public void setPointEnd(long pointEnd) {
-    this.pointEnd = pointEnd;
+  public void setLoginTime(long loginTime) {
+    this.loginTime = loginTime;
   }
   
   public List<Integer> getData() {

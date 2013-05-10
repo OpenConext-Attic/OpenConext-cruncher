@@ -40,6 +40,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,14 +81,14 @@ public class CruncherResource {
       @PathParam("endDate") long endDate,
       @QueryParam("idpEntityId") String idpEntityId,
       @QueryParam("spEntityId") String spEntityId) {
-    // start en end date are required
+    // start and end date are required
     // idp en sp entity id are optional, if neither is given -> error
     if (StringUtils.isBlank(idpEntityId) && StringUtils.isBlank(spEntityId)) {
       throw new IllegalArgumentException("Either idp or sp entity ID is required for this call");
     }
- 
+    
     LOG.debug("returning mocked response for unique logins. startDate " + startDate + " endData " + endDate + " idpEntityId " + idpEntityId + " spEntityId " + spEntityId);
-    List<LoginData> result = getMockLoginData();
+    List<LoginData> result = statisticsRepository.getUniqueLogins(new Timestamp(startDate), new Timestamp(endDate), spEntityId, idpEntityId);
     return Response.ok(result).build();
   }
   
@@ -97,7 +99,7 @@ public class CruncherResource {
       @PathParam("endDate") long endDate,
       @QueryParam("idpEntityId") String idpEntityId,
       @QueryParam("spEntityId") String spEntityId) {
-    // start en end date are required
+    // start and end date are required
     // idp en sp entity id are optional, if neither is given -> error
     if (StringUtils.isBlank(idpEntityId) && StringUtils.isBlank(spEntityId)) {
       throw new IllegalArgumentException("Either idp or sp entity ID is required for this call");
@@ -135,23 +137,13 @@ public class CruncherResource {
 
     return result;
   }
-  
-  private List<LoginData> getMockLoginData() {
-    List<LoginData> result = new ArrayList<LoginData>();
-    LoginData login = new LoginData();
-    fillLoginDataInterval(login);
-    result.add(login);
-    
-    return result;
-  }
 
   private void fillLoginDataInterval(LoginData login) {
     login.setIdpEntityId("mocked_idp_id");
     login.setIdpname("mocked_idp");
     login.setSpEntityId("mocked_sp_id");
     login.setSpName("mocked_sp");
-    login.setPointStart(0L);
-    login.setPointEnd(System.currentTimeMillis());
+    login.setLoginTime(System.currentTimeMillis());
   }
   
   private List<LoginDataInterval> getMockedLoginIntervalData() {

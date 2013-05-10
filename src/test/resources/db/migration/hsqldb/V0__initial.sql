@@ -42,19 +42,19 @@ CREATE TABLE conversion_migration (
   PRIMARY KEY (id)
 );
 
-INSERT INTO log_logins (loginstamp, userid, spentityname, idpentityid)
+INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-18 11:48:41','user_1', 'sp1', 'idp1');
-INSERT INTO log_logins (loginstamp, userid, spentityname, idpentityid)
+INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-19 11:48:41','user_1', 'sp2', 'idp2');
-INSERT INTO log_logins (loginstamp, userid, spentityname, idpentityid)
+INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-20 11:48:41','user_1', 'sp1', 'idp2');
-INSERT INTO log_logins (loginstamp, userid, spentityname, idpentityid)
+INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-20 11:48:41','user_2', 'sp3', 'idp2');
-INSERT INTO log_logins (loginstamp, userid, spentityname, idpentityid)
+INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-21 11:48:41','user_3', 'sp1', 'idp2');
-INSERT INTO log_logins (loginstamp, userid, spentityname, idpentityid)
+INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-21 11:48:41','user_4', 'sp1', 'idp2');
-INSERT INTO log_logins (loginstamp, userid, spentityname, idpentityid)
+INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-21 11:48:41','user_4', 'sp2', 'idp3');
-INSERT INTO log_logins (loginstamp, userid, spentityname, idpentityid)
+INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-22 11:48:41','user_4', 'sp3', 'idp3');

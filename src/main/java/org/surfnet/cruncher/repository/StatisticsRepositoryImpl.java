@@ -18,12 +18,20 @@
  */
 package org.surfnet.cruncher.repository;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.surfnet.cruncher.model.LoginData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.List;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.surfnet.cruncher.model.LoginData;
 
 @Named
 public class StatisticsRepositoryImpl implements StatisticsRepository {
@@ -41,13 +49,37 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
-  /*
-  INSERT INTO table (key,col1) VALUES (1,2)
-  ON DUPLICATE KEY UPDATE col1 = 2;
+  @Override
+  public List<LoginData> getUniqueLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId) {
+    NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+    
+    String query = "select * from log_logins " +
+    		"where " +
+    		"loginstamp >= :startDate AND " +
+    		"loginstamp <= :endDate AND " +
+    		"(:spEntityId IS NULL OR spentityid = :spEntityId) AND " +
+        "(:idpEntityId IS NULL OR idpentityid = :idpEntityId)";
+    
+    Map<String, Object> parameterMap = new HashMap<String, Object>();
+    parameterMap.put("startDate", start);
+    parameterMap.put("endDate", end);
+    parameterMap.put("spEntityId", spEntityId);
+    parameterMap.put("idpEntityId", idpEntityId);
+    
+    return namedJdbcTemplate.query(query, parameterMap , new RowMapper<LoginData>(){
 
-OR
-
-use plain sql for compatibil
-   */
-
+      @Override
+      public LoginData mapRow(ResultSet rs, int row) throws SQLException {
+        LoginData result = new LoginData();
+        result.setIdpEntityId(rs.getString("idpentityid"));
+        result.setIdpname(rs.getString("idpentityname"));
+        result.setSpEntityId(rs.getString("spentityid"));
+        result.setSpName(rs.getString("spentityname"));
+        result.setLoginTime(rs.getTimestamp("loginstamp").getTime());
+        
+        return result;
+      }
+      
+    });
+  }
 }
