@@ -88,6 +88,7 @@ public class CruncherResource {
     }
     
     LOG.debug("returning mocked response for unique logins. startDate " + startDate + " endData " + endDate + " idpEntityId " + idpEntityId + " spEntityId " + spEntityId);
+    //TODO count unique logins instead of returning them all
     List<LoginData> result = statisticsRepository.getUniqueLogins(new Timestamp(startDate), new Timestamp(endDate), spEntityId, idpEntityId);
     return Response.ok(result).build();
   }

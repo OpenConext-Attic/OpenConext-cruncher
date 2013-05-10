@@ -53,6 +53,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   public List<LoginData> getUniqueLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId) {
     NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     
+    //TODO group by on IDP
     String query = "select * from log_logins " +
     		"where " +
     		"loginstamp >= :startDate AND " +
