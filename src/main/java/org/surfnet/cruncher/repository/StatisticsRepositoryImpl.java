@@ -76,7 +76,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
         result.setIdpname(rs.getString("idpentityname"));
         result.setSpEntityId(rs.getString("spentityid"));
         result.setSpName(rs.getString("spentityname"));
-        result.setLoginTime(rs.getTimestamp("loginstamp").getTime());
+//        result.setLoginTime(rs.getTimestamp("loginstamp").getTime());
         
         return result;
       }

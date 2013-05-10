@@ -22,7 +22,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.surfnet.cruncher.model.LoginData;
-import org.surfnet.cruncher.model.LoginDataInterval;
 import org.surfnet.cruncher.model.SpStatistic;
 import org.surfnet.cruncher.model.UserStatistics;
 import org.surfnet.cruncher.repository.StatisticsRepository;
@@ -107,7 +106,7 @@ public class CruncherResource {
     }
     
     LOG.debug("returning mocked response for unique logins. startDate " + startDate + " endData " + endDate + " idpEntityId " + idpEntityId + " spEntityId " + spEntityId);
-    List<LoginDataInterval> result = getMockedLoginIntervalData();
+    List<LoginData> result = getMockedLoginData();
     return Response.ok(result).build();
   }
 
@@ -138,21 +137,18 @@ public class CruncherResource {
 
     return result;
   }
-
-  private void fillLoginDataInterval(LoginData login) {
+  
+  private List<LoginData> getMockedLoginData() {
+    List<LoginData> result = new ArrayList<LoginData>();
+    LoginData login =  new LoginData();
     login.setIdpEntityId("mocked_idp_id");
     login.setIdpname("mocked_idp");
     login.setSpEntityId("mocked_sp_id");
     login.setSpName("mocked_sp");
-    login.setLoginTime(System.currentTimeMillis());
-  }
-  
-  private List<LoginDataInterval> getMockedLoginIntervalData() {
-    List<LoginDataInterval> result = new ArrayList<LoginDataInterval>();
-    LoginDataInterval loginData =  new LoginDataInterval();
-    fillLoginDataInterval(loginData);
-    loginData.setPointInterval(1000L*60L*60L*24L);
-    result.add(loginData);
+    login.setPointStart(0L);
+    login.setPointEnd(System.currentTimeMillis());
+    login.setPointInterval(1000L*60L*60L*24L);
+    result.add(login);
     return result;
   }
 
