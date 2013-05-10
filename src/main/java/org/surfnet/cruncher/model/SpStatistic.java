@@ -18,21 +18,32 @@
  */
 package org.surfnet.cruncher.model;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Test;
-
-import java.io.IOException;
-
-public class LoginDataTest {
-
-  private ObjectMapper objectMapper = new ObjectMapper();
-
-  @Test
-  public void testJsonMarshalling() throws IOException {
-    LoginData loginData = new LoginData("sp1name", "idp1name", "sp1", "idp1", System.currentTimeMillis(), 0);
-    String s = objectMapper.writeValueAsString(loginData);
-    System.out.println(s);
+public class SpStatistic {
+  private String spName;
+  private String spEntityId;
+  private long entryTime;
+  
+  public String getSpName() {
+    return spName;
   }
-
+  
+  public void setSpName(String spName) {
+    this.spName = spName;
+  }
+  
+  public String getSpEntityId() {
+    return spEntityId;
+  }
+  
+  public void setSpEntityId(String spEntityId) {
+    this.spEntityId = spEntityId;
+  }
+  
+  public long getEntryTime() {
+    return entryTime;
+  }
+  
+  public void setEntryTime(long entryTime) {
+    this.entryTime = entryTime;
+  }
 }

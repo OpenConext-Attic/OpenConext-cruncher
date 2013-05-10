@@ -23,21 +23,66 @@ import java.util.List;
 
 public class LoginData {
 
-  public String spName;
-  public String idpname;
-  public String spEntityId;
-  public String idpEntityId;
-  public long pointStart;
-  public long pointInterval = 24L * 3600L * 1000L; // one day
-  public int total;
-  public List<Integer> data = new ArrayList<Integer>();
-
-  public LoginData(String spName, String idpname, String spEntityId, String idpEntityId, long pointStart, long pointInterval) {
+  private String spName;
+  private String idpname;
+  private String spEntityId;
+  private String idpEntityId;
+  private long pointStart;
+  private long pointEnd;
+  private List<Integer> data;
+  
+  public String getSpName() {
+    return spName;
+  }
+  
+  public void setSpName(String spName) {
     this.spName = spName;
+  }
+  
+  public String getIdpname() {
+    return idpname;
+  }
+  
+  public void setIdpname(String idpname) {
     this.idpname = idpname;
+  }
+  
+  public String getSpEntityId() {
+    return spEntityId;
+  }
+  
+  public void setSpEntityId(String spEntityId) {
     this.spEntityId = spEntityId;
+  }
+  
+  public String getIdpEntityId() {
+    return idpEntityId;
+  }
+  
+  public void setIdpEntityId(String idpEntityId) {
     this.idpEntityId = idpEntityId;
+  }
+  
+  public long getPointStart() {
+    return pointStart;
+  }
+  
+  public void setPointStart(long pointStart) {
     this.pointStart = pointStart;
-    this.pointInterval = pointInterval == 0 ? this.pointInterval : pointInterval;
+  }
+  
+  public long getPointEnd() {
+    return pointEnd;
+  }
+  
+  public void setPointEnd(long pointEnd) {
+    this.pointEnd = pointEnd;
+  }
+  
+  public List<Integer> getData() {
+    if (null == data) {
+      data = new ArrayList<Integer>();
+    }
+    return data;
   }
 }
