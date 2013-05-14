@@ -16,8 +16,11 @@
 
 package org.surfnet.cruncher.repository;
 
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import static junit.framework.Assert.*;
 
 import javax.inject.Inject;
 
@@ -26,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.surfnet.cruncher.config.SpringConfiguration;
+import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.LoginEntry;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -49,5 +53,14 @@ public class StatisticsRepositoryImplTest  {
   @Test
   public void aggregateList() {
     statisticsRepository.aggregateLogin(Arrays.asList(new LoginEntry()));
+  }
+  
+  @Test
+  public void getUniqueLogins() {
+    Timestamp start = new Timestamp(0L);
+    Timestamp end = new Timestamp(System.currentTimeMillis());
+    List<LoginData> result = statisticsRepository.getUniqueLogins(start, end, "sp1", "idp1");
+    assertNotNull(result);
+    assertEquals(1, result.size());
   }
 }

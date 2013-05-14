@@ -58,3 +58,9 @@ INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-21 11:48:41','user_4', 'sp2', 'idp3');
 INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-22 11:48:41','user_4', 'sp3', 'idp3');
+
+  
+  
+
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount)
+  VALUES('2013-01-01', 'sp1', 'idp1', 20);
