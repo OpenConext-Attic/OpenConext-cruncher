@@ -32,12 +32,21 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.surfnet.cruncher.model.LoginData;
+import org.surfnet.cruncher.model.LoginEntry;
 
 @Named
 public class StatisticsRepositoryImpl implements StatisticsRepository {
 
   @Inject
   private JdbcTemplate jdbcTemplate;
+
+  @Override
+  public void aggregateLogin(List<LoginEntry> loginEntries) {
+    if (loginEntries == null) {
+      throw new IllegalArgumentException("List of loginEntries cannot be null.");
+    }
+
+  }
 
   @Override
   public List<LoginData> getLoginsPerSpPerDay(String idpEntityId) {

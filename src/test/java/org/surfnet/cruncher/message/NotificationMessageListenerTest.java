@@ -18,17 +18,14 @@
  */
 package org.surfnet.cruncher.message;
 
+import javax.inject.Inject;
+
 import org.junit.Test;
-import org.springframework.data.redis.core.BoundListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.support.collections.DefaultRedisList;
 import org.surfnet.cruncher.config.SpringConfigurationTest;
 
-import javax.inject.Inject;
-import java.util.concurrent.atomic.AtomicLong;
-
-public class LoginMessageListenerTest extends SpringConfigurationTest {
+public class NotificationMessageListenerTest extends SpringConfigurationTest {
 
   @Inject
   private RedisTemplate< String, Object > redisTemplate;

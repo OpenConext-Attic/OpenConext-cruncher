@@ -18,17 +18,17 @@
  */
 package org.surfnet.cruncher.message;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.surfnet.cruncher.repository.StatisticsRepository;
 
-import javax.inject.Inject;
+public class NotificationMessageListener implements MessageListener {
 
-public class LoginMessageListener implements MessageListener {
-
-  private static final Logger LOG = LoggerFactory.getLogger(LoginMessageListener.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NotificationMessageListener.class);
 
   @Inject
   private StatisticsRepository statisticsRepository;
@@ -36,6 +36,8 @@ public class LoginMessageListener implements MessageListener {
 
   @Override
   public void onMessage(Message message, byte[] bytes) {
+    // TODO: get latest from list
+
     System.out.println("Received message: "+ message.toString());
     try {
       Thread.sleep(10000);

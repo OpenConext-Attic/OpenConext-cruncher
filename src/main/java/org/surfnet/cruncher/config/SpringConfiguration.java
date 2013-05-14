@@ -33,7 +33,7 @@ import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.surfnet.cruncher.message.LoginMessageListener;
+import org.surfnet.cruncher.message.NotificationMessageListener;
 
 import javax.inject.Inject;
 
@@ -95,7 +95,7 @@ public class SpringConfiguration {
 
   @Bean
   public MessageListenerAdapter messageListener() {
-    return new MessageListenerAdapter(new LoginMessageListener());
+    return new MessageListenerAdapter(new NotificationMessageListener());
   }
 
   @Bean

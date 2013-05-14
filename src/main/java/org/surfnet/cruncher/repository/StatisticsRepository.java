@@ -18,12 +18,15 @@
  */
 package org.surfnet.cruncher.repository;
 
-import org.surfnet.cruncher.model.LoginData;
-
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.surfnet.cruncher.model.LoginData;
+import org.surfnet.cruncher.model.LoginEntry;
+
 public interface StatisticsRepository {
+
+  void aggregateLogin(List<LoginEntry> loginEntries);
 
   /**
    * Makes a List of login data per Service Provider got the Identity Provider
