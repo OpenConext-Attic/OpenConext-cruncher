@@ -16,11 +16,16 @@
 
 package org.surfnet.cruncher.repository;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
-import static junit.framework.Assert.*;
 
 import javax.inject.Inject;
 
@@ -56,11 +61,25 @@ public class StatisticsRepositoryImplTest  {
   }
   
   @Test
-  public void getUniqueLogins() {
+  public void getUniqueLogins() throws ParseException {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-DD");
     Timestamp start = new Timestamp(0L);
     Timestamp end = new Timestamp(System.currentTimeMillis());
     List<LoginData> result = statisticsRepository.getUniqueLogins(start, end, "sp1", "idp1");
     assertNotNull(result);
-    assertEquals(1, result.size());
+    assertEquals(12, result.size());
+    
+    result = statisticsRepository.getUniqueLogins(start, end, "unknown", "idp1");
+    assertNotNull(result);
+    assertEquals(0, result.size());
+    
+    Date startDate = sdf.parse("2013-01-01");
+    Date endDate =sdf.parse("2013-01-04");
+    result = statisticsRepository.getUniqueLogins(new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()), null, "idp1");
+    assertNotNull(result);
+    assertEquals(4, result.size());
+    LoginData first = result.get(0);
+    assertEquals(20, first.getTotal());
+    assertEquals("idp1", first.getIdpEntityId());
   }
 }

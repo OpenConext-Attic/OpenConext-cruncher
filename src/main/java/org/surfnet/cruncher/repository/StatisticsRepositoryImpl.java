@@ -62,13 +62,13 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   public List<LoginData> getUniqueLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId) {
     NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     
-    //TODO group by on IDP
-    String query = "select * from log_logins " +
+    String query = "select * from aggregated_log_logins " +
     		"where " +
-    		"loginstamp >= :startDate AND " +
-    		"loginstamp <= :endDate AND " +
+    		"entryday >= :startDate AND " +
+    		"entryday <= :endDate AND " +
     		"(:spEntityId IS NULL OR spentityid = :spEntityId) AND " +
-        "(:idpEntityId IS NULL OR idpentityid = :idpEntityId)";
+        "(:idpEntityId IS NULL OR idpentityid = :idpEntityId) ";
+    		//"group by idpentityid, spentityid";
     
     Map<String, Object> parameterMap = new HashMap<String, Object>();
     parameterMap.put("startDate", start);
@@ -85,7 +85,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
         result.setIdpname(rs.getString("idpentityname"));
         result.setSpEntityId(rs.getString("spentityid"));
         result.setSpName(rs.getString("spentityname"));
-//        result.setLoginTime(rs.getTimestamp("loginstamp").getTime());
+        result.setTotal(rs.getInt("entrycount"));
         
         return result;
       }
