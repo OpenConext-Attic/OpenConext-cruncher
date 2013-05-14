@@ -78,6 +78,7 @@ public class SpringConfiguration {
     return new JdbcTemplate(dataSource());
   }
 
+  /*
   @Bean
   public JedisConnectionFactory jedisConnectionFactory() {
     return new JedisConnectionFactory();
@@ -110,5 +111,5 @@ public class SpringConfiguration {
   ChannelTopic topic() {
     return new ChannelTopic("pubsub:queue");
   }
-
+  */
 }

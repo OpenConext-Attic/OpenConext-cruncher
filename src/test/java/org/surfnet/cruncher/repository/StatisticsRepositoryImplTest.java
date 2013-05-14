@@ -31,19 +31,30 @@ import javax.inject.Inject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.surfnet.cruncher.config.SpringConfiguration;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.LoginEntry;
 
+import static org.junit.Assert.assertEquals;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringConfiguration.class)
 public class StatisticsRepositoryImplTest  {
 
+  private static final Logger LOG = LoggerFactory.getLogger(StatisticsRepositoryImplTest.class);
+
   @Inject
   private StatisticsRepositoryImpl statisticsRepository;
 
+  @Inject
+  private JdbcTemplate jdbcTemplate;
+
+  private String sqlRowCountAggregated = "select count(*) from aggregated_log_logins";
 
   @Test(expected=IllegalArgumentException.class)
   public void aggregateLoginNull() throws Exception {
@@ -57,7 +68,37 @@ public class StatisticsRepositoryImplTest  {
 
   @Test
   public void aggregateList() {
-    statisticsRepository.aggregateLogin(Arrays.asList(new LoginEntry()));
+    int rowCountBefore = jdbcTemplate.queryForInt(sqlRowCountAggregated);
+    LoginEntry loginEntry = new LoginEntry(1L, "someIdp", "marker0", new Date(), "someSp", "", "", "", "");
+    LoginEntry loginEntry2 = new LoginEntry(2L, "someIdp", "marker0", new Date(), "someSp", "", "", "", "");
+
+    statisticsRepository.aggregateLogin(Arrays.asList(loginEntry, loginEntry2));
+
+    int rowCountAfter = jdbcTemplate.queryForInt(sqlRowCountAggregated);
+    assertEquals("Aggregation of 2 records should result in 1 added rows", rowCountBefore + 1, rowCountAfter);
+    int aggregatedCount = jdbcTemplate.queryForInt("select entrycount from aggregated_log_logins");
+    assertEquals("Aggegrated records should count 2", 2, aggregatedCount);
+  }
+
+  @Test
+  public void aggregateDifferentSpIdp() {
+    int rowCountBefore = jdbcTemplate.queryForInt(sqlRowCountAggregated);
+    LoginEntry loginEntry1 = new LoginEntry(1L, "someIdp1", "marker1", new Date(), "someSp1", "", "", "", "");
+    LoginEntry loginEntry2 = new LoginEntry(2L, "someIdp2", "marker1", new Date(), "someSp1", "", "", "", "");
+    LoginEntry loginEntry3 = new LoginEntry(3L, "someIdp1", "marker1", new Date(), "someSp2", "", "", "", "");
+    LoginEntry loginEntry4 = new LoginEntry(4L, "someIdp2", "marker1", new Date(), "someSp2", "", "", "", "");
+
+    statisticsRepository.aggregateLogin(Arrays.asList(loginEntry1, loginEntry2, loginEntry3, loginEntry4));
+
+    int rowCountAfter = jdbcTemplate.queryForInt(sqlRowCountAggregated);
+    assertEquals("Aggregation of 4 records of different sp/idps should result in 4 added rows", rowCountBefore + 4, rowCountAfter);
+    LOG.debug("Contents of aggregated_log_logins: {}", jdbcTemplate.queryForList("select * from aggregated_log_logins"));
+    List<Integer> aggregatedCount = jdbcTemplate.queryForList("select entrycount from aggregated_log_logins where idpentityname like 'marker1'", Integer.class);
+    assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(0));
+    assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(1));
+    assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(2));
+    assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(3));
+
   }
   
   @Test

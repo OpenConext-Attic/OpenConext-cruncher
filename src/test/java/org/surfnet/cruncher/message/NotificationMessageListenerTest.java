@@ -18,22 +18,19 @@
  */
 package org.surfnet.cruncher.message;
 
-import javax.inject.Inject;
-
-import org.junit.Test;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.surfnet.cruncher.config.SpringConfigurationTest;
 
 public class NotificationMessageListenerTest extends SpringConfigurationTest {
 
-  @Inject
+//  @Inject
   private RedisTemplate< String, Object > redisTemplate;
 
-  @Inject
+//  @Inject
   private ChannelTopic topic;
 
-  @Test
+//  @Test
   public void testOnMessage() throws Exception {
 //    for (int i = 0; i < 100; i++) {
 //      System.out.println("Sending message...........");

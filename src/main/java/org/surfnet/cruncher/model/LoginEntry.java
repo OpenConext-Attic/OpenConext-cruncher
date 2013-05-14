@@ -23,6 +23,19 @@ import java.util.Date;
  * Class that represents a user login on OpenConext.
  */
 public class LoginEntry implements Serializable {
+
+  public LoginEntry(Long id, String idpEntityId, String idpEntityName, Date loginDate, String spEntityId, String spEntityName, String userAgent, String userId, String voName) {
+    this.id = id;
+    this.idpEntityId = idpEntityId;
+    this.idpEntityName = idpEntityName;
+    this.loginDate = loginDate;
+    this.spEntityId = spEntityId;
+    this.spEntityName = spEntityName;
+    this.userAgent = userAgent;
+    this.userId = userId;
+    this.voName = voName;
+  }
+
   private Date loginDate;
   private Long id;
   private String userId;
@@ -32,4 +45,24 @@ public class LoginEntry implements Serializable {
   private String idpEntityName;
   private String userAgent;
   private String voName;
+
+  public Date getLoginDate() {
+    return loginDate;
+  }
+
+  public String getSpEntityId() {
+    return spEntityId;
+  }
+
+  public String getIdpEntityId() {
+    return idpEntityId;
+  }
+
+  public String getSpEntityName() {
+    return spEntityName;
+  }
+
+  public String getIdpEntityName() {
+    return idpEntityName;
+  }
 }
