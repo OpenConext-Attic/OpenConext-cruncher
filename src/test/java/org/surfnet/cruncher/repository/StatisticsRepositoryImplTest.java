@@ -16,9 +16,6 @@
 
 package org.surfnet.cruncher.repository;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -41,6 +38,7 @@ import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.LoginEntry;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringConfiguration.class)
@@ -76,7 +74,7 @@ public class StatisticsRepositoryImplTest  {
 
     int rowCountAfter = jdbcTemplate.queryForInt(sqlRowCountAggregated);
     assertEquals("Aggregation of 2 records should result in 1 added rows", rowCountBefore + 1, rowCountAfter);
-    int aggregatedCount = jdbcTemplate.queryForInt("select entrycount from aggregated_log_logins");
+    int aggregatedCount = jdbcTemplate.queryForInt("select entrycount from aggregated_log_logins where idpentityname like 'marker0'");
     assertEquals("Aggegrated records should count 2", 2, aggregatedCount);
   }
 
