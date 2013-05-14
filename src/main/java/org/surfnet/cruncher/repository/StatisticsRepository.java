@@ -55,5 +55,6 @@ public interface StatisticsRepository {
    * @return List of {@link LoginData}
    */
   List<LoginData> getUniqueLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId);
-
+  
+  List<LoginData> getLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId, final long interval);
 }

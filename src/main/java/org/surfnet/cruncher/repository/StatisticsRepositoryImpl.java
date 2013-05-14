@@ -21,6 +21,7 @@ package org.surfnet.cruncher.repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -138,5 +139,67 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
       }
       
     });
+  }
+  
+  @Override
+  public List<LoginData> getLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId, final long interval) {
+    NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+    
+    String query = "select * from aggregated_log_logins " +
+        "where " +
+        "entryday >= :startDate AND " +
+        "entryday <= :endDate AND " +
+        "(:spEntityId IS NULL OR spentityid = :spEntityId) AND " +
+        "(:idpEntityId IS NULL OR idpentityid = :idpEntityId) " +
+        "group by idpentityid, spentityid " +
+        "order by idpentityid, spentityid";
+    
+    Map<String, Object> parameterMap = new HashMap<String, Object>();
+    parameterMap.put("startDate", start);
+    parameterMap.put("endDate", end);
+    parameterMap.put("spEntityId", spEntityId);
+    parameterMap.put("idpEntityId", idpEntityId);
+    
+    //result maps
+    final Map<String, Map<String, List<LoginData>>> resultMap = new HashMap<String, Map<String, List<LoginData>>>();
+    
+    namedJdbcTemplate.query(query, parameterMap , new RowMapper<LoginData>(){
+
+      @Override
+      public LoginData mapRow(ResultSet rs, int row) throws SQLException {
+        LoginData result = new LoginData();
+        result.setIdpEntityId(rs.getString("idpentityid"));
+        result.setIdpname(rs.getString("idpentityname"));
+        result.setSpEntityId(rs.getString("spentityid"));
+        result.setSpName(rs.getString("spentityname"));
+        result.setTotal(rs.getInt("entrycount"));
+        Date entryDate = rs.getDate("entryday");
+        //TODO maybe update the start en end to start en end of day
+        result.setPointStart(entryDate.getTime());
+        result.setPointEnd(entryDate.getTime());
+        result.setPointInterval(interval);
+        
+        //insert into resultMap
+        if (null == resultMap.get(result.getIdpEntityId())) {
+          resultMap.put(result.getIdpEntityId(), new HashMap<String, List<LoginData>>());
+        }
+        if (null == resultMap.get(result.getIdpEntityId()).get(result.getSpEntityId())) {
+          resultMap.get(result.getIdpEntityId()).put(result.getSpEntityId(), new ArrayList<LoginData>());
+        }
+        resultMap.get(result.getIdpEntityId()).get(result.getSpEntityId()).add(result);
+        
+        //this is kinda weird
+        return null;
+      }
+    });
+    
+    // normalize the resultMap in a list of loginData
+    for (String idp : resultMap.keySet()) {
+      for (String sp: resultMap.get(idp).keySet()) {
+        List<LoginData> current = resultMap.get(idp).get(sp);
+        System.out.println("entries found: " + current.size());
+      }
+    }
+    return null;
   }
 }
