@@ -26,6 +26,11 @@ import org.surfnet.cruncher.model.LoginEntry;
 
 public interface StatisticsRepository {
 
+  /**
+   * Use the given LoginEntries to aggregate data in the database.
+   * This will
+   * @param loginEntries
+   */
   void aggregateLogin(List<LoginEntry> loginEntries);
 
   /**

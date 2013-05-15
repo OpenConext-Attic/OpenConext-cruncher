@@ -67,8 +67,8 @@ public class StatisticsRepositoryImplTest  {
   @Test
   public void aggregateList() {
     int rowCountBefore = jdbcTemplate.queryForInt(sqlRowCountAggregated);
-    LoginEntry loginEntry = new LoginEntry(1L, "someIdp", "marker0", new Date(), "someSp", "", "", "", "");
-    LoginEntry loginEntry2 = new LoginEntry(2L, "someIdp", "marker0", new Date(), "someSp", "", "", "", "");
+    LoginEntry loginEntry = new LoginEntry("someIdp", "marker0", new Date(), "someSp", "", "", "", "");
+    LoginEntry loginEntry2 = new LoginEntry("someIdp", "marker0", new Date(), "someSp", "", "", "", "");
 
     statisticsRepository.aggregateLogin(Arrays.asList(loginEntry, loginEntry2));
 
@@ -81,10 +81,10 @@ public class StatisticsRepositoryImplTest  {
   @Test
   public void aggregateDifferentSpIdp() {
     int rowCountBefore = jdbcTemplate.queryForInt(sqlRowCountAggregated);
-    LoginEntry loginEntry1 = new LoginEntry(1L, "someIdp1", "marker1", new Date(), "someSp1", "", "", "", "");
-    LoginEntry loginEntry2 = new LoginEntry(2L, "someIdp2", "marker1", new Date(), "someSp1", "", "", "", "");
-    LoginEntry loginEntry3 = new LoginEntry(3L, "someIdp1", "marker1", new Date(), "someSp2", "", "", "", "");
-    LoginEntry loginEntry4 = new LoginEntry(4L, "someIdp2", "marker1", new Date(), "someSp2", "", "", "", "");
+    LoginEntry loginEntry1 = new LoginEntry("someIdp1", "marker1", new Date(), "someSp1", "", "", "", "");
+    LoginEntry loginEntry2 = new LoginEntry("someIdp2", "marker1", new Date(), "someSp1", "", "", "", "");
+    LoginEntry loginEntry3 = new LoginEntry("someIdp1", "marker1", new Date(), "someSp2", "", "", "", "");
+    LoginEntry loginEntry4 = new LoginEntry("someIdp2", "marker1", new Date(), "someSp2", "", "", "", "");
 
     statisticsRepository.aggregateLogin(Arrays.asList(loginEntry1, loginEntry2, loginEntry3, loginEntry4));
 

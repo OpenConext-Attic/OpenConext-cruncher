@@ -24,8 +24,7 @@ import java.util.Date;
  */
 public class LoginEntry implements Serializable {
 
-  public LoginEntry(Long id, String idpEntityId, String idpEntityName, Date loginDate, String spEntityId, String spEntityName, String userAgent, String userId, String voName) {
-    this.id = id;
+  public LoginEntry(String idpEntityId, String idpEntityName, Date loginDate, String spEntityId, String spEntityName, String userAgent, String userId, String voName) {
     this.idpEntityId = idpEntityId;
     this.idpEntityName = idpEntityName;
     this.loginDate = loginDate;
@@ -37,7 +36,6 @@ public class LoginEntry implements Serializable {
   }
 
   private Date loginDate;
-  private Long id;
   private String userId;
   private String spEntityId;
   private String idpEntityId;
