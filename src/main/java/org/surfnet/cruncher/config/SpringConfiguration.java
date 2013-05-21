@@ -18,27 +18,23 @@
  */
 package org.surfnet.cruncher.config;
 
+import javax.inject.Inject;
+
 import com.googlecode.flyway.core.Flyway;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
-import org.springframework.data.redis.serializer.GenericToStringSerializer;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.surfnet.cruncher.message.NotificationMessageListener;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-import javax.inject.Inject;
-
+@EnableScheduling
 @Configuration
 @PropertySource("classpath:cruncher.application.properties")
+@ImportResource("classpath:aggregationScheduling.xml")
 /*
  * The component scan can be used to add packages and exclusions to the default
  * package

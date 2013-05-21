@@ -21,6 +21,8 @@ package org.surfnet.cruncher.repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,17 +32,17 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.LoginEntry;
 
 @Named
-@Transactional
 public class StatisticsRepositoryImpl implements StatisticsRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatisticsRepositoryImpl.class);
@@ -48,53 +50,19 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   @Inject
   private JdbcTemplate jdbcTemplate;
 
-  @Override
-  public void aggregateLogin(List<LoginEntry> loginEntries) {
-    if (loginEntries == null) {
-      throw new IllegalArgumentException("List of loginEntries cannot be null.");
-    }
-    for (LoginEntry le : loginEntries) {
-      addToAggregated(le);
-    }
+
+  private static final DateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
+
+  private String aggregationRecordHash(LoginEntry le) {
+    return aggregationRecordHash(le.getIdpEntityId(), le.getSpEntityId(), le.getLoginDate());
   }
 
-  private void addToAggregated(LoginEntry le) {
-    if (entryForDayExists(le.getLoginDate(), le.getSpEntityId(), le.getIdpEntityId())) {
-      LOG.debug("Updating existing aggregated record for date {}, record: {}", le.getLoginDate(), le);
-      updateDailyWith(le);
-    } else {
-      LOG.debug("Inserting new aggregated record for date {}, record: {}", le.getLoginDate(), le);
-      insertDailyWith(le);
-    }
+  private String aggregationRecordHash(String idpEntityId, String spEntityId, Date loginDate) {
+    String input = dateformat.format(loginDate) + "!" + idpEntityId + "!" + spEntityId;
+    return DigestUtils.sha1Hex(input);
   }
 
-  /**
-   * Create a record for a day.
-   * @param le the LoginEntry
-   */
-  private void insertDailyWith(LoginEntry le) {
-    jdbcTemplate.update("insert into aggregated_log_logins (entryday,spentityid,idpentityid,spentityname,idpentityname, entrycount) values " +
-      "(:entryDate, :spEntityId, :idpEntityId, :spEntityName, :idpEntityName, 1)",
-      le.getLoginDate(), le.getSpEntityId(), le.getIdpEntityId(), le.getSpEntityName(), le.getIdpEntityName());
-  }
 
-  private void updateDailyWith(LoginEntry le) {
-    jdbcTemplate.update("update aggregated_log_logins set entrycount = entrycount + 1 where " +
-      "entryday = :thedate and " +
-      "spentityid = :spentityid and " +
-      "idpentityid = :idpentityid", le.getLoginDate(), le.getSpEntityId() ,le.getIdpEntityId());
-  }
-
-  /**
-   * Whether an aggregated record exists for the given date
-   * @param loginDate
-   */
-  private boolean entryForDayExists(Date loginDate, String spEntityId, String idpEntityId) {
-    return jdbcTemplate.queryForInt("select count(*) from aggregated_log_logins where " +
-      "entryday = :thedate and " +
-      "spentityid = :spentityid and " +
-      "idpentityid = :idpentityid", loginDate, spEntityId, idpEntityId) == 1;
-  }
 
   @Override
   public List<LoginData> getLoginsPerSpPerDay(String idpEntityId) {
@@ -201,5 +169,33 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
       }
     }
     return null;
+  }
+
+  @Override
+  public List<LoginEntry> getUnprocessedLoginEntries(int nrOfRecords) {
+    throw new NotImplementedException("");
+  }
+
+  @Override
+  public void setLoginEntriesProcessed(List<LoginEntry> entries) {
+    throw new NotImplementedException("");
+  }
+
+  @Override
+  public void updateAggregated(String idpEntityId, String spEntityId, Date loginDate) {
+    jdbcTemplate.update("update aggregated_log_logins set entrycount = entrycount + 1 where datespidphash = ?", aggregationRecordHash(idpEntityId, spEntityId, loginDate));
+  }
+
+  @Override
+  public void insertAggregated(LoginEntry le) {
+    LOG.debug("Inserting new aggregated record for date {}, record: {}, hash: {}", new Object[] {le.getLoginDate(), le, aggregationRecordHash(le)});
+    jdbcTemplate.update("insert into aggregated_log_logins (entryday,spentityid,idpentityid,spentityname,idpentityname, datespidphash, entrycount)" +
+      " values (?, ?, ?, ?, ?, ?, 1)",
+      le.getLoginDate(), le.getSpEntityId(), le.getIdpEntityId(), le.getSpEntityName(), le.getIdpEntityName(), aggregationRecordHash(le));
+  }
+
+  @Override
+  public boolean aggregatedExists(String idpEntityId, String spEntityId, Date loginDate) {
+    return jdbcTemplate.queryForInt("select count(*) from aggregated_log_logins where datespidphash = ?", aggregationRecordHash(idpEntityId, spEntityId, loginDate)) == 1;
   }
 }

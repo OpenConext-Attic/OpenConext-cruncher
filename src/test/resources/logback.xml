@@ -23,7 +23,7 @@
   
   <logger name="com.googlecode.flyway.core" level="debug" />
 
-  <logger name="org.surfnet" level="debug" />
+  <logger name="org.surfnet" level="info" />
 
   <root level="info">
     <appender-ref ref="console"/>

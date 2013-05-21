@@ -19,19 +19,13 @@
 package org.surfnet.cruncher.repository;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.LoginEntry;
 
 public interface StatisticsRepository {
-
-  /**
-   * Use the given LoginEntries to aggregate data in the database.
-   * This will
-   * @param loginEntries
-   */
-  void aggregateLogin(List<LoginEntry> loginEntries);
 
   /**
    * Makes a List of login data per Service Provider got the Identity Provider
@@ -62,4 +56,22 @@ public interface StatisticsRepository {
   List<LoginData> getUniqueLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId);
   
   List<LoginData> getLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId, final long interval);
+
+  /**
+   * Get a list of records that have to be aggregated yet.
+   * @param nrOfRecords the number to get
+   */
+  List<LoginEntry> getUnprocessedLoginEntries(int nrOfRecords);
+
+  /**
+   * Mark login-log entries as processed by aggregation
+   * @param entries the entries to mark
+   */
+  void setLoginEntriesProcessed(List<LoginEntry> entries);
+
+  void updateAggregated(String idpEntityId, String spEntityId, Date loginDate);
+
+  void insertAggregated(LoginEntry le);
+
+  boolean aggregatedExists(String idpEntityId, String spEntityId, Date loginDate);
 }
