@@ -18,9 +18,9 @@
  */
 package org.surfnet.cruncher.repository;
 
-import java.sql.Timestamp;
 import java.util.List;
 
+import org.joda.time.LocalDate;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.LoginEntry;
 
@@ -49,17 +49,26 @@ public interface StatisticsRepository {
   List<LoginData> getLoginsPerSpPerDay();
   
   /**
-   * Makes a list of unique logins per SP and/or Idp. The login should fall
-   * between start en end time stamp. Start en end timestamps are required
-   * and one of idp and sp is required (or both).
-   * 
-   * @param start start time
-   * @param end end time
-   * @param spEntityId sp entity id
-   * @param idpEntityId idp entity id
-   * @return List of {@link LoginData}
+   * return unique logins
+   * @param start
+   * @param end
+   * @param spEntityId
+   * @param idpEntityId
+   * @return
    */
-  List<LoginData> getUniqueLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId);
+  List<LoginData> getUniqueLogins(final LocalDate start, final LocalDate end, final String spEntityId, final String idpEntityId);
   
-  List<LoginData> getLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId, final long interval);
+  /**
+   * Return aggregated logins based on IDP or SP.
+   * <p>
+   * <strong>NOTE</strong> Either sp entity ID or idp entity ID is required!
+   * </p>
+   * @param start start date
+   * @param end end date
+   * @param spEntityId (optional) sp entity ID
+   * @param idpEntityId (optional) idpEntity ID
+   * @param interval currently always null and defaults to a day
+   * @return a list of LoginData
+   */
+  List<LoginData> getLogins(final LocalDate start, final LocalDate end, final String spEntityId, final String idpEntityId, final Long interval);
 }

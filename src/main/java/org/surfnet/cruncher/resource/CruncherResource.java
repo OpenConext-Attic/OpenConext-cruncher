@@ -18,15 +18,8 @@
  */
 package org.surfnet.cruncher.resource;
 
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.surfnet.cruncher.model.LoginData;
-import org.surfnet.cruncher.model.SpStatistic;
-import org.surfnet.cruncher.model.UserStatistics;
-import org.surfnet.cruncher.repository.StatisticsRepository;
-import org.surfnet.oaaas.auth.AuthorizationServerFilter;
-import org.surfnet.oaaas.model.VerifyTokenResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -40,9 +33,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.surfnet.cruncher.model.LoginData;
+import org.surfnet.cruncher.model.SpStatistic;
+import org.surfnet.cruncher.model.UserStatistics;
+import org.surfnet.cruncher.repository.StatisticsRepository;
+import org.surfnet.oaaas.auth.AuthorizationServerFilter;
+import org.surfnet.oaaas.model.VerifyTokenResponse;
 
 @Named
 @Path("/v1")
@@ -88,7 +88,7 @@ public class CruncherResource {
     
     LOG.debug("returning mocked response for unique logins. startDate " + startDate + " endData " + endDate + " idpEntityId " + idpEntityId + " spEntityId " + spEntityId);
     //TODO count unique logins instead of returning them all
-    List<LoginData> result = statisticsRepository.getUniqueLogins(new Timestamp(startDate), new Timestamp(endDate), spEntityId, idpEntityId);
+    List<LoginData> result = statisticsRepository.getUniqueLogins(new LocalDate(startDate), new LocalDate(endDate), spEntityId, idpEntityId);
     return Response.ok(result).build();
   }
   
@@ -105,8 +105,7 @@ public class CruncherResource {
       throw new IllegalArgumentException("Either idp or sp entity ID is required for this call");
     }
     
-    LOG.debug("returning mocked response for unique logins. startDate " + startDate + " endData " + endDate + " idpEntityId " + idpEntityId + " spEntityId " + spEntityId);
-    List<LoginData> result = getMockedLoginData();
+    List<LoginData> result = statisticsRepository.getLogins(new LocalDate(startDate), new LocalDate(endDate), spEntityId, idpEntityId, null);
     return Response.ok(result).build();
   }
 
@@ -137,19 +136,4 @@ public class CruncherResource {
 
     return result;
   }
-  
-  private List<LoginData> getMockedLoginData() {
-    List<LoginData> result = new ArrayList<LoginData>();
-    LoginData login =  new LoginData();
-    login.setIdpEntityId("mocked_idp_id");
-    login.setIdpname("mocked_idp");
-    login.setSpEntityId("mocked_sp_id");
-    login.setSpName("mocked_sp");
-    login.setPointStart(0L);
-    login.setPointEnd(System.currentTimeMillis());
-    login.setPointInterval(1000L*60L*60L*24L);
-    result.add(login);
-    return result;
-  }
-
 }
