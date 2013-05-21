@@ -88,3 +88,28 @@ INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount
   VALUES('2013-01-11', 'sp1', 'idp1', 20, 11);
 INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
   VALUES('2013-01-12', 'sp1', 'idp1', 20, 12);
+
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
+  VALUES('2013-01-01', 'sp2', 'idp1', 20, 13);
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
+  VALUES('2013-01-02', 'sp2', 'idp1', 20, 14);
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
+  VALUES('2013-01-03', 'sp2', 'idp1', 20, 15);
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
+  VALUES('2013-01-04', 'sp2', 'idp1', 20, 16);
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
+  VALUES('2013-01-05', 'sp2', 'idp1', 20, 17);
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
+  VALUES('2013-01-06', 'sp2', 'idp1', 20, 18);
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
+  VALUES('2013-01-07', 'sp1', 'idp2', 20, 19);
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
+  VALUES('2013-01-08', 'sp1', 'idp2', 20, 20);
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
+  VALUES('2013-01-09', 'sp1', 'idp2', 20, 21);
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
+  VALUES('2013-01-10', 'sp1', 'idp2', 20, 22);
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
+  VALUES('2013-01-11', 'sp1', 'idp2', 20, 23);
+INSERT INTO aggregated_log_logins (entryday, spentityid, idpentityid, entrycount, datespidphash)
+  VALUES('2013-01-12', 'sp1', 'idp2', 20, 24);

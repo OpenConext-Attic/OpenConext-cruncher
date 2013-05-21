@@ -20,7 +20,6 @@ package org.surfnet.cruncher.repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,6 +33,8 @@ import javax.inject.Named;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -75,7 +76,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   }
 
   @Override
-  public List<LoginData> getUniqueLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId) {
+  public List<LoginData> getUniqueLogins(final LocalDate start, final LocalDate end, final String spEntityId, final String idpEntityId) {
     NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     
     String query = "select * from aggregated_log_logins " +
@@ -87,8 +88,8 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     		//"group by idpentityid, spentityid";
     
     Map<String, Object> parameterMap = new HashMap<String, Object>();
-    parameterMap.put("startDate", start);
-    parameterMap.put("endDate", end);
+    parameterMap.put("startDate", new Date(start.toDateMidnight().getMillis()));
+    parameterMap.put("endDate", new Date(end.toDateMidnight().getMillis()));
     parameterMap.put("spEntityId", spEntityId);
     parameterMap.put("idpEntityId", idpEntityId);
     
@@ -109,8 +110,15 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     });
   }
   
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public List<LoginData> getLogins(final Timestamp start, final Timestamp end, final String spEntityId, final String idpEntityId, final long interval) {
+  public List<LoginData> getLogins(final LocalDate start, final LocalDate end, final String spEntityId, final String idpEntityId, final Long interval) {
+    final List<LoginData> result = new ArrayList<LoginData>();
+    
+    parameterChecks(spEntityId, idpEntityId, interval);
+    
     NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     
     String query = "select * from aggregated_log_logins " +
@@ -119,56 +127,85 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
         "entryday <= :endDate AND " +
         "(:spEntityId IS NULL OR spentityid = :spEntityId) AND " +
         "(:idpEntityId IS NULL OR idpentityid = :idpEntityId) " +
-        "group by idpentityid, spentityid " +
-        "order by idpentityid, spentityid";
+        "order by idpentityid, spentityid ";
     
     Map<String, Object> parameterMap = new HashMap<String, Object>();
-    parameterMap.put("startDate", start);
-    parameterMap.put("endDate", end);
+    parameterMap.put("startDate", new Date(start.toDateMidnight().getMillis()));
+    parameterMap.put("endDate", new Date(end.toDateMidnight().getMillis()));
     parameterMap.put("spEntityId", spEntityId);
     parameterMap.put("idpEntityId", idpEntityId);
     
-    //result maps
-    final Map<String, Map<String, List<LoginData>>> resultMap = new HashMap<String, Map<String, List<LoginData>>>();
-    
-    namedJdbcTemplate.query(query, parameterMap , new RowMapper<LoginData>(){
-
+    namedJdbcTemplate.query(query, parameterMap , new RowMapper<Object>() {
+      Map<LocalDate, Integer> queryResult = new HashMap<LocalDate, Integer>();
+      String currentAggregateSp = null;
+      String currentAggregateIdp = null;
+      
       @Override
-      public LoginData mapRow(ResultSet rs, int row) throws SQLException {
-        LoginData result = new LoginData();
-        result.setIdpEntityId(rs.getString("idpentityid"));
-        result.setIdpname(rs.getString("idpentityname"));
-        result.setSpEntityId(rs.getString("spentityid"));
-        result.setSpName(rs.getString("spentityname"));
-        result.setTotal(rs.getInt("entrycount"));
-        Date entryDate = rs.getDate("entryday");
-        //TODO maybe update the start en end to start en end of day
-        result.setPointStart(entryDate.getTime());
-        result.setPointEnd(entryDate.getTime());
-        result.setPointInterval(interval);
+      public Object mapRow(ResultSet rs, int row) throws SQLException {
+        String spEntityId = rs.getString("spentityid");
+        String idpEntityId = rs.getString("idpentityid");
+        /*
+         * aggregate if sp/idp entityid differs from previous record
+         * do not aggregate if on first record
+         * if on last record, aggregate last entries
+         */
+        if ((!spEntityId.equals(currentAggregateSp) || !idpEntityId.equals(currentAggregateIdp)) && !rs.isFirst()) {
+          result.add(aggregateCurrentEntry(rs, start, end, currentAggregateSp, currentAggregateIdp));
+          queryResult = new HashMap<LocalDate, Integer>();
+        } 
+        currentAggregateIdp = idpEntityId;
+        currentAggregateSp = spEntityId;
+        queryResult.put(new LocalDate(rs.getDate("entryday")), rs.getInt("entrycount"));
         
-        //insert into resultMap
-        if (null == resultMap.get(result.getIdpEntityId())) {
-          resultMap.put(result.getIdpEntityId(), new HashMap<String, List<LoginData>>());
-        }
-        if (null == resultMap.get(result.getIdpEntityId()).get(result.getSpEntityId())) {
-          resultMap.get(result.getIdpEntityId()).put(result.getSpEntityId(), new ArrayList<LoginData>());
-        }
-        resultMap.get(result.getIdpEntityId()).get(result.getSpEntityId()).add(result);
+       if (rs.isLast()) {
+         // aggregate last set
+         result.add(aggregateCurrentEntry(rs, start, end, currentAggregateSp, currentAggregateIdp));
+       }
+
+       /*
+        * This is kinda weird, but single row results are stored in 
+        * queryResult (hashmap) or aggregated in result (List<loginData)
+        */
+       return null;
+     }
+
+     private LoginData aggregateCurrentEntry(final ResultSet rs, final LocalDate start, final LocalDate end, String spEntityId, String idpEntityId) throws SQLException {
+       //aggregate
+       LoginData loginData = new LoginData();
+       loginData.setIdpEntityId(idpEntityId);
+       loginData.setSpEntityId(spEntityId);
+       loginData.setIdpname(rs.getString("idpentityname"));
+       loginData.setSpName(rs.getString("spentityname"));
+       
+       LocalDate current = start;
         
-        //this is kinda weird
-        return null;
-      }
+       int total = 0;
+       while (current.isBefore(end.plusDays(1))) {
+         if (null == queryResult.get(current)) {
+           loginData.getData().add(0);
+         } else {
+           loginData.getData().add(queryResult.get(current));
+           total += queryResult.get(current);
+         }
+         current = current.plusDays(1);
+       }
+       loginData.setTotal(total);
+       loginData.setPointStart(start.toDate().getTime());
+       loginData.setPointEnd(end.toDate().getTime());
+       loginData.setPointInterval(1000L * 60L * 60L * 24L);
+       return loginData;
+     }
     });
-    
-    // normalize the resultMap in a list of loginData
-    for (String idp : resultMap.keySet()) {
-      for (String sp: resultMap.get(idp).keySet()) {
-        List<LoginData> current = resultMap.get(idp).get(sp);
-        System.out.println("entries found: " + current.size());
-      }
+    return result;
+  }
+
+  private void parameterChecks(final String spEntityId, final String idpEntityId, final Long interval) {
+    if (StringUtils.isBlank(spEntityId) && StringUtils.isBlank(idpEntityId)) {
+      throw new IllegalArgumentException("One of spEntityId, idpEntityId is required!");
     }
-    return null;
+    if (null != interval) {
+      throw new IllegalArgumentException("Currently not implemented");
+    }
   }
 
   @Override
