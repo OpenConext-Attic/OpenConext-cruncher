@@ -42,6 +42,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.LoginEntry;
+import org.surfnet.cruncher.model.SpStatistic;
 
 @Named
 public class StatisticsRepositoryImpl implements StatisticsRepository {
@@ -206,6 +207,38 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     if (null != interval) {
       throw new IllegalArgumentException("Currently not implemented");
     }
+  }
+  
+  
+
+  @Override
+  public List<SpStatistic> getActiveServices(String userid, String idpEntityId) {
+    NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+    
+    String query = "select max(loginstamp) as loginstamp, spentityid as spentityid, " +
+    		"max(spentityname) as spentityname from log_logins " +
+        "where " +
+        "userid = :userId AND " +
+        "idpentityid = :idpEntityId " +
+        "group by spentityid";
+    
+    Map<String, Object> parameterMap = new HashMap<String, Object>();
+    parameterMap.put("userId", userid);
+    parameterMap.put("idpEntityId", idpEntityId);
+    
+    return namedJdbcTemplate.query(query, parameterMap , new RowMapper<SpStatistic>(){
+
+      @Override
+      public SpStatistic mapRow(ResultSet rs, int row) throws SQLException {
+        SpStatistic result = new SpStatistic();
+        result.setEntryTime(rs.getTimestamp("loginstamp").getTime());
+        result.setSpEntityId(rs.getString("spentityid"));
+        result.setSpName(rs.getString("spentityname"));
+
+        return result;
+      }
+      
+    });
   }
 
   @Override

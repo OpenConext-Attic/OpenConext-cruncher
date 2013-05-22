@@ -24,6 +24,7 @@ import java.util.List;
 import org.joda.time.LocalDate;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.LoginEntry;
+import org.surfnet.cruncher.model.SpStatistic;
 
 public interface StatisticsRepository {
 
@@ -66,6 +67,16 @@ public interface StatisticsRepository {
    */
   List<LoginData> getLogins(final LocalDate start, final LocalDate end, final String spEntityId, final String idpEntityId, final Long interval);
 
+  /**
+   * retrieve a list of service for which the user has been active (a login
+   * record must exist for this user)
+   * 
+   * @param userid the user for the user
+   * @param idpEntityId the idp for which the user is currently logged in
+   * @return a list of SPs for which the user has been logged in
+   */
+  List<SpStatistic> getActiveServices(String userid, String idpEntityId);
+  
   /**
    * Get a list of records that have to be aggregated yet.
    * @param nrOfRecords the number to get

@@ -62,7 +62,7 @@ public class CruncherResource {
     
     // retrieve IDP and USER information from oauth token
     // retrieve list of 'active SPs'
-    final List<SpStatistic> recentLogins = getMockSpStatistics();
+    final List<SpStatistic> recentLogins = statisticsRepository.getActiveServices("user_1", "idp2");
     
     // retrieve list of Sps for which the user has given consent
     LOG.debug("returning mocked response for user statistics");

@@ -49,7 +49,11 @@ INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
 INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-19 11:48:41','user_1', 'sp2', 'idp2');
 INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
+  VALUES ('2012-03-19 11:48:41','user_1', 'sp2', 'idp2');
+INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-20 11:48:41','user_1', 'sp1', 'idp2');
+INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
+  VALUES ('2012-02-20 11:48:41','user_1', 'sp1', 'idp2');
 INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-20 11:48:41','user_2', 'sp3', 'idp2');
 INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)

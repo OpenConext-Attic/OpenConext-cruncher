@@ -16,7 +16,9 @@
 
 package org.surfnet.cruncher.repository;
 
+import java.sql.Date;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -29,6 +31,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.surfnet.cruncher.config.SpringConfiguration;
 import org.surfnet.cruncher.model.LoginData;
+import org.surfnet.cruncher.model.SpStatistic;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -143,5 +146,30 @@ public class StatisticsRepositoryImplTest {
     assertEquals(0, (int)loginData.getData().get(3));
     assertEquals(0, (int)loginData.getData().get(4));
     assertEquals(0, (int)loginData.getData().get(10));
+  }
+  
+  @Test
+  public void getActiveServices() {
+    List<SpStatistic> result = statisticsRepository.getActiveServices("user_1", "idp2");
+    assertNotNull(result);
+    assertEquals(2, result.size());
+    SpStatistic currentStat = result.get(0);
+    if (currentStat.getSpEntityId().equals("sp2")) {
+      checkStatistics(result.get(0));
+    } else {
+      checkStatistics(result.get(1));
+    }
+  }
+
+  private void checkStatistics(SpStatistic spStatistic) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    java.util.Date entryDate = null;
+    try {
+      entryDate = sdf.parse("2012-04-19 11:48:41");
+    } catch (ParseException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    assertEquals(entryDate.getTime(), spStatistic.getEntryTime());
   }
 }
