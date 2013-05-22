@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.surfnet.coin</groupId>
     <artifactId>coin-master</artifactId>
-    <version>3.1.1</version>
+    <version>3.2.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.surfnet</groupId>
@@ -86,7 +86,7 @@
     <cglib.version>2.2.2</cglib.version>
     <mysql.version>5.1.20</mysql.version>
     <joda-time.version>2.1</joda-time.version>
-    <coin-master.test-dependencies.version>3.1.1</coin-master.test-dependencies.version>
+    <coin-master.test-dependencies.version>3.2.0-SNAPSHOT</coin-master.test-dependencies.version>
   </properties>
 
   <build>
