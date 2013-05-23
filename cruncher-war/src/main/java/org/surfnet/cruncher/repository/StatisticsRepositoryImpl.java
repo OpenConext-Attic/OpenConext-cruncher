@@ -18,20 +18,7 @@
  */
 package org.surfnet.cruncher.repository;
 
-import static org.surfnet.cruncher.message.Aggregator.aggregationRecordHash;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -43,6 +30,15 @@ import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.LoginEntry;
 import org.surfnet.cruncher.model.SpStatistic;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 @Named
 public class StatisticsRepositoryImpl implements StatisticsRepository {
 
@@ -50,6 +46,21 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
 
   @Inject
   private JdbcTemplate jdbcTemplate;
+
+
+
+
+  private String aggregationRecordHash(LoginEntry le) {
+    return aggregationRecordHash(le.getIdpEntityId(), le.getSpEntityId(), le.getLoginDate());
+  }
+
+  private String aggregationRecordHash(String idpEntityId, String spEntityId, Date loginDate) {
+    final DateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
+    String input = dateformat.format(loginDate) + "!" + idpEntityId + "!" + spEntityId;
+    return DigestUtils.sha1Hex(input);
+  }
+
+
 
   @Override
   public List<LoginData> getUniqueLogins(final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId) {
