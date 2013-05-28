@@ -39,9 +39,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.SpStatistic;
-import org.surfnet.cruncher.model.UserStatistics;
 import org.surfnet.cruncher.repository.StatisticsRepository;
 import org.surfnet.oaaas.auth.AuthorizationServerFilter;
+import org.surfnet.oaaas.auth.principal.AuthenticatedPrincipal;
+import org.surfnet.oaaas.conext.SAMLAuthenticatedPrincipal;
 import org.surfnet.oaaas.model.VerifyTokenResponse;
 
 @Named
@@ -55,21 +56,25 @@ public class CruncherResource {
   private StatisticsRepository statisticsRepository;
 
   @GET
-  @Path("/statistics")
-  public Response getAllStatisticsForUser(@Context
+  @Path("/lastlogins")
+  public Response getRecentLoginsForUser(@Context
                          HttpServletRequest request) {
-    UserStatistics result = new UserStatistics();
+    String userId = getUserIdFromToken(request);
+    String idpEntityId = getIdpEntityIdFromToken(request);
     
+    final List<SpStatistic> recentLogins = statisticsRepository.getActiveServices(userId, idpEntityId);
+
+    return Response.ok(recentLogins).build();
+  }
+  
+  @GET
+  @Path("/consent")
+  public Response getConsentForUser(@Context
+                         HttpServletRequest request) {
     // retrieve IDP and USER information from oauth token
     // retrieve list of 'active SPs'
-    final List<SpStatistic> recentLogins = statisticsRepository.getActiveServices("user_1", "idp2");
-    
-    // retrieve list of Sps for which the user has given consent
-    LOG.debug("returning mocked response for user statistics");
-    final List<SpStatistic> consentSps = getMockSpStatistics();
+    List<SpStatistic> result = getMockSpStatistics();
 
-    result.setActiveSps(recentLogins);
-    result.setConsentSps(consentSps);
     return Response.ok(result).build();
   }
   
@@ -135,5 +140,25 @@ public class CruncherResource {
     result.add(stat3);
 
     return result;
+  }
+  
+  protected String getIdpEntityIdFromToken(final HttpServletRequest request) {
+    VerifyTokenResponse verifyTokenResponse = (VerifyTokenResponse) request.getAttribute(AuthorizationServerFilter.VERIFY_TOKEN_RESPONSE);
+    AuthenticatedPrincipal authenticatedPrincipal = verifyTokenResponse.getPrincipal();
+    if (authenticatedPrincipal instanceof SAMLAuthenticatedPrincipal) {
+      SAMLAuthenticatedPrincipal principal = (SAMLAuthenticatedPrincipal) authenticatedPrincipal;
+      return principal.getIdentityProvider();
+    }
+    throw new IllegalArgumentException("Only type of Principal supported is SAMLAuthenticatedPrincipal, not " + authenticatedPrincipal.getClass());
+  }
+  
+  protected String getUserIdFromToken(final HttpServletRequest request) {
+    VerifyTokenResponse verifyTokenResponse = (VerifyTokenResponse) request.getAttribute(AuthorizationServerFilter.VERIFY_TOKEN_RESPONSE);
+    AuthenticatedPrincipal authenticatedPrincipal = verifyTokenResponse.getPrincipal();
+    if (authenticatedPrincipal instanceof SAMLAuthenticatedPrincipal) {
+      SAMLAuthenticatedPrincipal principal = (SAMLAuthenticatedPrincipal) authenticatedPrincipal;
+      return principal.getUsername();
+    }
+    throw new IllegalArgumentException("Only type of Principal supported is SAMLAuthenticatedPrincipal, not " + authenticatedPrincipal.getClass());
   }
 }

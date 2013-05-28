@@ -19,8 +19,9 @@
 package org.surfnet.cruncher.config;
 
 import javax.inject.Inject;
+import javax.servlet.Filter;
 
-import com.googlecode.flyway.core.Flyway;
+import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -30,6 +31,9 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.surfnet.oaaas.auth.AuthorizationServerFilter;
+
+import com.googlecode.flyway.core.Flyway;
 
 @EnableScheduling
 @Configuration
@@ -55,6 +59,19 @@ public class SpringConfiguration {
    // dataSource.setTestOnBorrow(true);
    // dataSource.setValidationQuery("SELECT 1");
     return dataSource;
+  }
+  
+  @Bean
+  public Filter authorizationServerFilter() {
+    String className = env.getProperty("authorizationServerFilterClass");
+    if (StringUtils.isNotBlank(className)) {
+      try {
+        return (Filter) getClass().getClassLoader().loadClass(className).newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }      
+    }
+    throw new IllegalStateException("cannot build authorizationServerFilter from " + className);
   }
 
   @Bean
