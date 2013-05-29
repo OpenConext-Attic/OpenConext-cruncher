@@ -18,7 +18,6 @@
  */
 package org.surfnet.cruncher.resource;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -40,10 +39,6 @@ import org.slf4j.LoggerFactory;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.SpStatistic;
 import org.surfnet.cruncher.repository.StatisticsRepository;
-import org.surfnet.oaaas.auth.AuthorizationServerFilter;
-import org.surfnet.oaaas.auth.principal.AuthenticatedPrincipal;
-import org.surfnet.oaaas.conext.SAMLAuthenticatedPrincipal;
-import org.surfnet.oaaas.model.VerifyTokenResponse;
 
 @Named
 @Path("/v1")
@@ -56,34 +51,19 @@ public class CruncherResource {
   private StatisticsRepository statisticsRepository;
 
   @GET
-  @Path("/lastlogins")
-  public Response getRecentLoginsForUser(@Context
-                         HttpServletRequest request) {
-    String userId = getUserIdFromToken(request);
-    String idpEntityId = getIdpEntityIdFromToken(request);
-    
-    final List<SpStatistic> recentLogins = statisticsRepository.getActiveServices(userId, idpEntityId);
+  @Path("/lastlogin/{idpEntityId}/{userId}")
+  public Response getRecentLoginsForUser(@Context HttpServletRequest request, @PathParam("userId") String userId,
+      @PathParam("idpEntityId") String idpEntityId) {
 
+    final List<SpStatistic> recentLogins = statisticsRepository.getActiveServices(userId, idpEntityId);
+    LOG.info("returning recent logins for " + userId + " on " + idpEntityId);
     return Response.ok(recentLogins).build();
   }
-  
-  @GET
-  @Path("/consent")
-  public Response getConsentForUser(@Context
-                         HttpServletRequest request) {
-    // retrieve IDP and USER information from oauth token
-    // retrieve list of 'active SPs'
-    List<SpStatistic> result = getMockSpStatistics();
 
-    return Response.ok(result).build();
-  }
-  
   @GET
   @Path("/uniqueLogins/{startDate}/{endDate}")
-  public Response getUniqueLogins(@Context HttpServletRequest request,
-      @PathParam("startDate") long startDate,
-      @PathParam("endDate") long endDate,
-      @QueryParam("idpEntityId") String idpEntityId,
+  public Response getUniqueLogins(@Context HttpServletRequest request, @PathParam("startDate") long startDate,
+      @PathParam("endDate") long endDate, @QueryParam("idpEntityId") String idpEntityId,
       @QueryParam("spEntityId") String spEntityId) {
     // start and end date are required
     // idp en sp entity id are optional, if neither is given -> error
@@ -91,74 +71,29 @@ public class CruncherResource {
       throw new IllegalArgumentException("Either idp or sp entity ID is required for this call");
     }
     
-    LOG.debug("returning mocked response for unique logins. startDate " + startDate + " endData " + endDate + " idpEntityId " + idpEntityId + " spEntityId " + spEntityId);
-    //TODO count unique logins instead of returning them all
-    List<LoginData> result = statisticsRepository.getUniqueLogins(new LocalDate(startDate), new LocalDate(endDate), spEntityId, idpEntityId);
+    LOG.debug("returning mocked response for unique logins. startDate " + startDate + " endData " + endDate
+        + " idpEntityId " + idpEntityId + " spEntityId " + spEntityId);
+    // TODO determine what a unique login is and return it
+    List<LoginData> result = statisticsRepository.getUniqueLogins(new LocalDate(startDate), new LocalDate(endDate),
+        idpEntityId, spEntityId);
     return Response.ok(result).build();
   }
-  
+
   @GET
   @Path("logins/{startDate}/{endDate}")
-  public Response getLoginsPerInterval(@Context HttpServletRequest request,
-      @PathParam("startDate") long startDate,
-      @PathParam("endDate") long endDate,
-      @QueryParam("idpEntityId") String idpEntityId,
+  public Response getLoginsPerInterval(@Context HttpServletRequest request, @PathParam("startDate") long startDate,
+      @PathParam("endDate") long endDate, @QueryParam("idpEntityId") String idpEntityId,
       @QueryParam("spEntityId") String spEntityId) {
+
     // start and end date are required
     // idp en sp entity id are optional, if neither is given -> error
     if (StringUtils.isBlank(idpEntityId) && StringUtils.isBlank(spEntityId)) {
       throw new IllegalArgumentException("Either idp or sp entity ID is required for this call");
     }
-    
-    List<LoginData> result = statisticsRepository.getLogins(new LocalDate(startDate), new LocalDate(endDate), spEntityId, idpEntityId, null);
+
+    List<LoginData> result = statisticsRepository.getLogins(new LocalDate(startDate), new LocalDate(endDate),
+        idpEntityId, spEntityId);
+    LOG.info("returning logins for sp " + spEntityId + " and idp " + idpEntityId);
     return Response.ok(result).build();
-  }
-
-  protected String getClientId(HttpServletRequest request) {
-    VerifyTokenResponse verifyTokenResponse = (VerifyTokenResponse) request.getAttribute(AuthorizationServerFilter.VERIFY_TOKEN_RESPONSE);
-    return verifyTokenResponse.getPrincipal().getName();
-  }
-
-  private List<SpStatistic> getMockSpStatistics() {
-    List<SpStatistic> result = new ArrayList<SpStatistic>();
-    SpStatistic stat1 = new SpStatistic();
-    stat1.setEntryTime(System.currentTimeMillis());
-    stat1.setSpEntityId("stats_spEntityId");
-    stat1.setSpName("mocked_SP_Name");
-    result.add(stat1);
-    
-    SpStatistic stat2 = new SpStatistic();
-    stat2.setEntryTime(System.currentTimeMillis() - (1000L*60L*60L*24L*3L));
-    stat2.setSpEntityId("stats_older_spId");
-    stat2.setSpName("mocked_Older_SP");
-    result.add(stat2);
-    
-    SpStatistic stat3 = new SpStatistic();
-    stat3.setEntryTime(0L);
-    stat3.setSpEntityId("stats_oldest_spId");
-    stat3.setSpName("mocked_Oldest_SP");
-    result.add(stat3);
-
-    return result;
-  }
-  
-  protected String getIdpEntityIdFromToken(final HttpServletRequest request) {
-    VerifyTokenResponse verifyTokenResponse = (VerifyTokenResponse) request.getAttribute(AuthorizationServerFilter.VERIFY_TOKEN_RESPONSE);
-    AuthenticatedPrincipal authenticatedPrincipal = verifyTokenResponse.getPrincipal();
-    if (authenticatedPrincipal instanceof SAMLAuthenticatedPrincipal) {
-      SAMLAuthenticatedPrincipal principal = (SAMLAuthenticatedPrincipal) authenticatedPrincipal;
-      return principal.getIdentityProvider();
-    }
-    throw new IllegalArgumentException("Only type of Principal supported is SAMLAuthenticatedPrincipal, not " + authenticatedPrincipal.getClass());
-  }
-  
-  protected String getUserIdFromToken(final HttpServletRequest request) {
-    VerifyTokenResponse verifyTokenResponse = (VerifyTokenResponse) request.getAttribute(AuthorizationServerFilter.VERIFY_TOKEN_RESPONSE);
-    AuthenticatedPrincipal authenticatedPrincipal = verifyTokenResponse.getPrincipal();
-    if (authenticatedPrincipal instanceof SAMLAuthenticatedPrincipal) {
-      SAMLAuthenticatedPrincipal principal = (SAMLAuthenticatedPrincipal) authenticatedPrincipal;
-      return principal.getUsername();
-    }
-    throw new IllegalArgumentException("Only type of Principal supported is SAMLAuthenticatedPrincipal, not " + authenticatedPrincipal.getClass());
   }
 }

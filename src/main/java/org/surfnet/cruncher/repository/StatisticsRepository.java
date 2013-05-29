@@ -51,10 +51,10 @@ public interface StatisticsRepository {
    * @param idpEntityId
    * @return
    */
-  List<LoginData> getUniqueLogins(final LocalDate start, final LocalDate end, final String spEntityId, final String idpEntityId);
+  List<LoginData> getUniqueLogins(final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId);
   
   /**
-   * Return aggregated logins based on IDP or SP.
+   * Return aggregated logins based on IDP or SP per day.
    * <p>
    * <strong>NOTE</strong> Either sp entity ID or idp entity ID is required!
    * </p>
@@ -62,10 +62,9 @@ public interface StatisticsRepository {
    * @param end end date
    * @param spEntityId (optional) sp entity ID
    * @param idpEntityId (optional) idpEntity ID
-   * @param interval currently always null and defaults to a day
    * @return a list of LoginData
    */
-  List<LoginData> getLogins(final LocalDate start, final LocalDate end, final String spEntityId, final String idpEntityId, final Long interval);
+  List<LoginData> getLogins(final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId);
 
   /**
    * retrieve a list of service for which the user has been active (a login

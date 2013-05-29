@@ -77,7 +77,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   }
 
   @Override
-  public List<LoginData> getUniqueLogins(final LocalDate start, final LocalDate end, final String spEntityId, final String idpEntityId) {
+  public List<LoginData> getUniqueLogins(final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId) {
     NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     
     String query = "select * from aggregated_log_logins " +
@@ -115,10 +115,10 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
    * {@inheritDoc}
    */
   @Override
-  public List<LoginData> getLogins(final LocalDate start, final LocalDate end, final String spEntityId, final String idpEntityId, final Long interval) {
+  public List<LoginData> getLogins(final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId) {
     final List<LoginData> result = new ArrayList<LoginData>();
     
-    parameterChecks(spEntityId, idpEntityId, interval);
+    parameterChecks(spEntityId, idpEntityId);
     
     NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     
@@ -151,7 +151,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
          * if on last record, aggregate last entries
          */
         if ((!spEntityId.equals(currentAggregateSp) || !idpEntityId.equals(currentAggregateIdp)) && !rs.isFirst()) {
-          result.add(aggregateCurrentEntry(rs, start, end, currentAggregateSp, currentAggregateIdp));
+          result.add(aggregateCurrentEntry(rs, start, end, currentAggregateIdp, currentAggregateSp));
           queryResult = new HashMap<LocalDate, Integer>();
         } 
         currentAggregateIdp = idpEntityId;
@@ -160,7 +160,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
         
        if (rs.isLast()) {
          // aggregate last set
-         result.add(aggregateCurrentEntry(rs, start, end, currentAggregateSp, currentAggregateIdp));
+         result.add(aggregateCurrentEntry(rs, start, end, currentAggregateIdp, currentAggregateSp));
        }
 
        /*
@@ -170,7 +170,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
        return null;
      }
 
-     private LoginData aggregateCurrentEntry(final ResultSet rs, final LocalDate start, final LocalDate end, String spEntityId, String idpEntityId) throws SQLException {
+     private LoginData aggregateCurrentEntry(final ResultSet rs, final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId) throws SQLException {
        //aggregate
        LoginData loginData = new LoginData();
        loginData.setIdpEntityId(idpEntityId);
@@ -200,12 +200,9 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     return result;
   }
 
-  private void parameterChecks(final String spEntityId, final String idpEntityId, final Long interval) {
+  private void parameterChecks(final String spEntityId, final String idpEntityId) {
     if (StringUtils.isBlank(spEntityId) && StringUtils.isBlank(idpEntityId)) {
       throw new IllegalArgumentException("One of spEntityId, idpEntityId is required!");
-    }
-    if (null != interval) {
-      throw new IllegalArgumentException("Currently not implemented");
     }
   }
   
