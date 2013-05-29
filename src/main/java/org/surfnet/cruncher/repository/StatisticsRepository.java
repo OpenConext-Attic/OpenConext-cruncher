@@ -27,21 +27,6 @@ import org.surfnet.cruncher.model.LoginEntry;
 import org.surfnet.cruncher.model.SpStatistic;
 
 public interface StatisticsRepository {
-
-  /**
-   * Makes a List of login data per Service Provider got the Identity Provider
-   *
-   * @param idpEntityId unique identifier of the Identity provider
-   * @return List of {@link LoginData}
-   */
-  List<LoginData> getLoginsPerSpPerDay(String idpEntityId);
-
-  /**
-   * Makes a List of login data per Service Provider for all IdP's
-   *
-   * @return List of {@link LoginData}
-   */
-  List<LoginData> getLoginsPerSpPerDay();
   
   /**
    * return unique logins

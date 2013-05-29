@@ -64,18 +64,6 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     return DigestUtils.sha1Hex(input);
   }
 
-
-
-  @Override
-  public List<LoginData> getLoginsPerSpPerDay(String idpEntityId) {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
-  }
-
-  @Override
-  public List<LoginData> getLoginsPerSpPerDay() {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
-  }
-
   @Override
   public List<LoginData> getUniqueLogins(final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId) {
     NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
