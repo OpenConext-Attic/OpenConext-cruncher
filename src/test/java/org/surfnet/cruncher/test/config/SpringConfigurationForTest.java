@@ -16,12 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.surfnet.cruncher.config;
+package org.surfnet.cruncher.test.config;
 
 import javax.inject.Inject;
-import javax.servlet.Filter;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -31,23 +29,21 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.googlecode.flyway.core.Flyway;
 
-@EnableScheduling
 @Configuration
 @PropertySource("classpath:cruncher.application.properties")
-@ImportResource("classpath:aggregationScheduling.xml")
+@ImportResource("classpath:property-placeholder.xml")
 /*
  * The component scan can be used to add packages and exclusions to the default
  * package
  */
-@ComponentScan(basePackages = {"org.surfnet.cruncher"})
+@ComponentScan(basePackages = {"org.surfnet.cruncher.test.config","org.surfnet.cruncher.repository","org.surfnet.cruncher.message"})
 @EnableTransactionManagement
-public class SpringConfiguration {
+public class SpringConfigurationForTest {
 
   @Inject
   Environment env;
@@ -59,22 +55,7 @@ public class SpringConfiguration {
     dataSource.setUrl(env.getProperty("jdbc.url"));
     dataSource.setUsername(env.getProperty("jdbc.username"));
     dataSource.setPassword(env.getProperty("jdbc.password"));
-   // dataSource.setTestOnBorrow(true);
-   // dataSource.setValidationQuery("SELECT 1");
     return dataSource;
-  }
-  
-  @Bean
-  public Filter authorizationServerFilter() {
-    String className = env.getProperty("authorizationServerFilterClass");
-    if (StringUtils.isNotBlank(className)) {
-      try {
-        return (Filter) getClass().getClassLoader().loadClass(className).newInstance();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }      
-    }
-    throw new IllegalStateException("cannot build authorizationServerFilter from " + className);
   }
 
   @Bean

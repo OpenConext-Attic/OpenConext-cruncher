@@ -16,7 +16,11 @@
 
 package org.surfnet.cruncher.message;
 
+import static org.junit.Assert.assertEquals;
+import static org.surfnet.cruncher.message.Aggregator.aggregationRecordHash;
+
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -31,22 +35,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.surfnet.cruncher.config.SpringConfiguration;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 import org.surfnet.cruncher.model.LoginEntry;
-
-import static org.junit.Assert.assertEquals;
+import org.surfnet.cruncher.test.config.SpringConfigurationForTest;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = SpringConfiguration.class)
+@ContextConfiguration(classes = SpringConfigurationForTest.class)
+@TransactionConfiguration(defaultRollback=true)
+@Transactional
 public class AggregatorTest {
   private static final Logger LOG = LoggerFactory.getLogger(AggregatorTest.class);
 
   @Inject
   private Aggregator aggregator;
 
-  @Inject private JdbcTemplate jdbcTemplate;
-
+  @Inject
+  private JdbcTemplate jdbcTemplate;
 
   private String sqlRowCountAggregated = "select count(*) from aggregated_log_logins";
 
@@ -55,10 +61,17 @@ public class AggregatorTest {
     aggregator.aggregateLogin(null);
   }
 
-  @Ignore
   @Test
   public void testRun() {
     aggregator.run();
+    Calendar instance = Calendar.getInstance();
+    instance.set(2012, 3, 21);
+    String hash = aggregationRecordHash("idp2", "sp1", instance.getTime());
+ 
+    long entryCount = jdbcTemplate.queryForLong("select entrycount from aggregated_log_logins where datespidphash = ?", hash);
+    assertEquals(2, entryCount);
+    long timestamp = jdbcTemplate.queryForLong("select * from aggregate_meta_data");
+    assertEquals(1335088121000L, timestamp);
   }
 
   @Test
@@ -98,7 +111,6 @@ public class AggregatorTest {
     assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(1));
     assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(2));
     assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(3));
-
   }
 
 }

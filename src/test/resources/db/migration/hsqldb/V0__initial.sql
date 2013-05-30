@@ -26,6 +26,11 @@ CREATE TABLE aggregated_log_logins (
   UNIQUE (datespidphash)
 );
 
+DROP TABLE IF EXISTS aggregate_meta_data;
+CREATE TABLE aggregate_meta_data (
+  aggregatepoint bigint NOT NULL
+);
+
 DROP TABLE IF EXISTS user_log_logins;
 CREATE TABLE user_log_logins (
   loginstamp timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -44,16 +49,20 @@ CREATE TABLE conversion_migration (
   PRIMARY KEY (id)
 );
 
+INSERT INTO aggregate_meta_data (aggregatepoint)
+  VALUES (0);
+  
+  
 INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-18 11:48:41','user_1', 'sp1', 'idp1');
 INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-19 11:48:41','user_1', 'sp2', 'idp2');
 INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
-  VALUES ('2012-03-19 11:48:41','user_1', 'sp2', 'idp2');
+  VALUES ('2012-03-19 11:48:42','user_1', 'sp2', 'idp2');
 INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-20 11:48:41','user_1', 'sp1', 'idp2');
 INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
-  VALUES ('2012-02-20 11:48:41','user_1', 'sp1', 'idp2');
+  VALUES ('2012-02-20 11:48:42','user_1', 'sp1', 'idp2');
 INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)
   VALUES ('2012-04-20 11:48:41','user_2', 'sp3', 'idp2');
 INSERT INTO log_logins (loginstamp, userid, spentityid, idpentityid)

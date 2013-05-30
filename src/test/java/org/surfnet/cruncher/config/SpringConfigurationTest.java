@@ -18,17 +18,17 @@
  */
 package org.surfnet.cruncher.config;
 
-import com.googlecode.flyway.core.Flyway;
+import static org.junit.Assert.assertNotNull;
+
+import javax.inject.Inject;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.surfnet.cruncher.repository.StatisticsRepository;
 
-import javax.inject.Inject;
-import javax.sql.DataSource;
-
-import static org.junit.Assert.assertNotNull;
+import com.googlecode.flyway.core.Flyway;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes=SpringConfiguration.class)

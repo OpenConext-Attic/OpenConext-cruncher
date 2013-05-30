@@ -18,10 +18,11 @@
  */
 package org.surfnet.cruncher.repository;
 
+import static org.surfnet.cruncher.message.Aggregator.aggregationRecordHash;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,8 +32,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -51,18 +50,6 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
 
   @Inject
   private JdbcTemplate jdbcTemplate;
-
-
-  private static final DateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
-
-  private String aggregationRecordHash(LoginEntry le) {
-    return aggregationRecordHash(le.getIdpEntityId(), le.getSpEntityId(), le.getLoginDate());
-  }
-
-  private String aggregationRecordHash(String idpEntityId, String spEntityId, Date loginDate) {
-    String input = dateformat.format(loginDate) + "!" + idpEntityId + "!" + spEntityId;
-    return DigestUtils.sha1Hex(input);
-  }
 
   @Override
   public List<LoginData> getUniqueLogins(final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId) {
@@ -228,12 +215,36 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
 
   @Override
   public List<LoginEntry> getUnprocessedLoginEntries(int nrOfRecords) {
-    throw new NotImplementedException("");
+    Long aggregateStartingPoint = jdbcTemplate.queryForLong("select aggregatepoint from aggregate_meta_data");
+    
+    NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+    
+    String query = "select * from log_logins where loginstamp > :startingPoint order by loginstamp LIMIT :batchSize";
+    
+    Map<String, Object> parameterMap = new HashMap<String, Object>();
+    parameterMap.put("batchSize", nrOfRecords);
+    parameterMap.put("startingPoint", new Timestamp(aggregateStartingPoint));
+    
+    return namedJdbcTemplate.query(query, parameterMap , new RowMapper<LoginEntry>(){
+      @Override
+      public LoginEntry mapRow(ResultSet rs, int rowNum) throws SQLException {
+        String idpEntityId = rs.getString("idpentityid");
+        String idpEntityName = rs.getString("idpentityname");
+        Date loginDate = new Date(rs.getTimestamp("loginstamp").getTime());
+        String spEntityId = rs.getString("spentityid");
+        String spEntityName = rs.getString("spentityname");
+        String userAgent = rs.getString("useragent");
+        String userId = rs.getString("userid");
+        String voName = rs.getString("voname");
+        return new LoginEntry(idpEntityId, idpEntityName, loginDate, spEntityId, spEntityName, userAgent, userId, voName);
+      }
+    });
   }
 
   @Override
   public void setLoginEntriesProcessed(List<LoginEntry> entries) {
-    throw new NotImplementedException("");
+    LoginEntry last = entries.get(entries.size()-1);
+    jdbcTemplate.update("update aggregate_meta_data set aggregatepoint = ?", last.getLoginDate().getTime());
   }
 
   @Override

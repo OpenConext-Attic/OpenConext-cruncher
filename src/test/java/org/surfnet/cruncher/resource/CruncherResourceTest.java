@@ -59,7 +59,7 @@ public class CruncherResourceTest {
     
     List<LoginData> result = (List<LoginData>) response.getEntity();
     assertNotNull(result);
-    assertEquals(12, result.size());
+    assertEquals(13, result.size());
 
     response = cruncherResource.getUniqueLogins(request, start.toDate().getTime(), end.toDate().getTime(), "idp1", "unknown");
     result = (List<LoginData>) response.getEntity();

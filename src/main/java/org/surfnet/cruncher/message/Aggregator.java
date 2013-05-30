@@ -16,10 +16,14 @@
 
 package org.surfnet.cruncher.message;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +34,17 @@ import org.surfnet.cruncher.repository.StatisticsRepository;
 
 @Component("aggregator")
 public class Aggregator {
+  private static final DateTimeFormatter dateformat = DateTimeFormat.forPattern("yyyy-MM-dd");
   private static final Logger LOG = LoggerFactory.getLogger(Aggregator.class);
+  
+  public static String aggregationRecordHash(LoginEntry le) {
+    return aggregationRecordHash(le.getIdpEntityId(), le.getSpEntityId(), le.getLoginDate());
+  }
+
+  public static String aggregationRecordHash(String idpEntityId, String spEntityId, Date loginDate) {
+    String input = dateformat.print(loginDate.getTime()) + "!" + idpEntityId + "!" + spEntityId;
+    return DigestUtils.sha1Hex(input);
+  }
 
   @Inject
   private StatisticsRepository statisticsRepository;
@@ -44,7 +58,9 @@ public class Aggregator {
     List<LoginEntry> entries = statisticsRepository.getUnprocessedLoginEntries(batchSize);
     LOG.debug("Got {} unprocessed login entries", entries.size());
     aggregateLogin(entries);
-    statisticsRepository.setLoginEntriesProcessed(entries);
+    if (entries.size() > 0) {
+      statisticsRepository.setLoginEntriesProcessed(entries);
+    }
   }
 
   /**
