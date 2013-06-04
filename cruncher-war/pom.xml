@@ -103,7 +103,7 @@
             </connector>
           </connectors>
           <stopKey>stopcruncher</stopKey>
-          <stopPort>8280</stopPort>
+          <stopPort>8281</stopPort>
           <reload>manual</reload>
           <useTestClasspath>true</useTestClasspath>
         </configuration>
