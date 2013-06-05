@@ -104,8 +104,6 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   public List<LoginData> getLogins(final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId) {
     final List<LoginData> result = new ArrayList<LoginData>();
     
-    parameterChecks(spEntityId, idpEntityId);
-    
     NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     
     String query = "select * from aggregated_log_logins " +
@@ -185,14 +183,6 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     });
     return result;
   }
-
-  private void parameterChecks(final String spEntityId, final String idpEntityId) {
-    if (StringUtils.isBlank(spEntityId) && StringUtils.isBlank(idpEntityId)) {
-      throw new IllegalArgumentException("One of spEntityId, idpEntityId is required!");
-    }
-  }
-  
-  
 
   @Override
   public List<SpStatistic> getActiveServices(String userid, String idpEntityId) {

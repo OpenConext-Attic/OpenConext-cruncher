@@ -63,6 +63,7 @@
   </repositories>
   
   <modules>
+    <module>cruncher-client</module>
     <module>cruncher-war</module>
     <module>cruncher-dist</module>
   </modules>

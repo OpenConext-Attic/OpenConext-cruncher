@@ -116,15 +116,9 @@ public class CruncherResourceTest {
 
   @Test
   public void testIllegalArguments() {
-    
-    try {
-      cruncherResource.getLoginsPerInterval(request, 0L, 0L, null, null);
-      fail("Should have received an illegal argument exception");
-    } catch (IllegalArgumentException iae) {
-      // expected
-    }
+    List<LoginData> result = (List<LoginData>) cruncherResource.getLoginsPerInterval(request, 0L, 0L, null, null).getEntity();
   }
-  
+
   @Test
   public void testResponseWithZeros() {
     LocalDate start = new LocalDate(2013, 1, 10);

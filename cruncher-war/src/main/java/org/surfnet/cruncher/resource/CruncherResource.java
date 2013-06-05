@@ -36,6 +36,8 @@ import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.SpStatistic;
 import org.surfnet.cruncher.repository.StatisticsRepository;
@@ -51,9 +53,9 @@ public class CruncherResource {
   private StatisticsRepository statisticsRepository;
 
   @GET
-  @Path("/lastlogin/{idpEntityId}/{userId}")
-  public Response getRecentLoginsForUser(@Context HttpServletRequest request, @PathParam("userId") String userId,
-      @PathParam("idpEntityId") String idpEntityId) {
+  @Path("/lastlogin")
+  public Response getRecentLoginsForUser(@Context HttpServletRequest request, @QueryParam("userId") String userId,
+      @QueryParam("idpEntityId") String idpEntityId) {
 
     final List<SpStatistic> recentLogins = statisticsRepository.getActiveServices(userId, idpEntityId);
     LOG.info("returning recent logins for " + userId + " on " + idpEntityId);
@@ -61,16 +63,13 @@ public class CruncherResource {
   }
 
   @GET
-  @Path("/uniqueLogins/{startDate}/{endDate}")
-  public Response getUniqueLogins(@Context HttpServletRequest request, @PathParam("startDate") long startDate,
-      @PathParam("endDate") long endDate, @QueryParam("idpEntityId") String idpEntityId,
+  @Path("/uniqueLogins")
+  public Response getUniqueLogins(@Context HttpServletRequest request, @QueryParam("startDate") Long startDate,
+      @QueryParam("endDate") Long endDate, @QueryParam("idpEntityId") String idpEntityId,
       @QueryParam("spEntityId") String spEntityId) {
-    // start and end date are required
-    // idp en sp entity id are optional, if neither is given -> error
-    if (StringUtils.isBlank(idpEntityId) && StringUtils.isBlank(spEntityId)) {
-      throw new IllegalArgumentException("Either idp or sp entity ID is required for this call");
-    }
-    
+    invariant(startDate, endDate);
+
+
     LOG.debug("returning mocked response for unique logins. startDate " + startDate + " endData " + endDate
         + " idpEntityId " + idpEntityId + " spEntityId " + spEntityId);
     // TODO determine what a unique login is and return it
@@ -80,20 +79,23 @@ public class CruncherResource {
   }
 
   @GET
-  @Path("logins/{startDate}/{endDate}")
-  public Response getLoginsPerInterval(@Context HttpServletRequest request, @PathParam("startDate") long startDate,
-      @PathParam("endDate") long endDate, @QueryParam("idpEntityId") String idpEntityId,
+  @Path("/logins")
+  public Response getLoginsPerInterval(@Context HttpServletRequest request, @QueryParam("startDate") Long startDate,
+      @QueryParam("endDate") Long endDate, @QueryParam("idpEntityId") String idpEntityId,
       @QueryParam("spEntityId") String spEntityId) {
 
-    // start and end date are required
-    // idp en sp entity id are optional, if neither is given -> error
-    if (StringUtils.isBlank(idpEntityId) && StringUtils.isBlank(spEntityId)) {
-      throw new IllegalArgumentException("Either idp or sp entity ID is required for this call");
-    }
+    invariant(startDate, endDate);
 
     List<LoginData> result = statisticsRepository.getLogins(new LocalDate(startDate), new LocalDate(endDate),
         idpEntityId, spEntityId);
     LOG.info("returning logins for sp " + spEntityId + " and idp " + idpEntityId);
     return Response.ok(result).build();
   }
+
+
+  private void invariant(Long startDate, Long endDate) {
+    Assert.notNull(endDate, "startDate is a required query parameter");
+    Assert.notNull(endDate, "endDate is a required query parameter");
+  }
+
 }
