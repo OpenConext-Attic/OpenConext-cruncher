@@ -59,8 +59,6 @@ public class SpringConfiguration {
     dataSource.setUrl(env.getProperty("jdbc.url"));
     dataSource.setUsername(env.getProperty("jdbc.username"));
     dataSource.setPassword(env.getProperty("jdbc.password"));
-   // dataSource.setTestOnBorrow(true);
-   // dataSource.setValidationQuery("SELECT 1");
     return dataSource;
   }
   
