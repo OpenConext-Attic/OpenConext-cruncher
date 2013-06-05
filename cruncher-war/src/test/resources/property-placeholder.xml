@@ -21,6 +21,6 @@
        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-  <context:property-placeholder location="classpath:cruncher.application.properties" />
+  <context:property-placeholder location="classpath:cruncher.properties" />
   
 </beans>
