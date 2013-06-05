@@ -64,6 +64,7 @@
   
   <modules>
     <module>cruncher-war</module>
+    <module>cruncher-dist</module>
   </modules>
 
   <properties>

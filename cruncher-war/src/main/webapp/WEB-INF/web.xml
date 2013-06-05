@@ -38,7 +38,7 @@
     </init-param>
     <init-param>
       <param-name>apis.application.properties.file</param-name>
-      <param-value>cruncher.application.properties</param-value>
+      <param-value>cruncher.properties</param-value>
     </init-param>
   </filter>
   
