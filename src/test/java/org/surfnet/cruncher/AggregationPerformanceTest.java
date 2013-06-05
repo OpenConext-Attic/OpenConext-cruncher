@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -35,10 +36,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.surfnet.cruncher.config.SpringConfiguration;
 import org.surfnet.cruncher.message.Aggregator;
 import org.surfnet.cruncher.model.LoginEntry;
+import org.surfnet.cruncher.unittest.config.SpringConfigurationForTest;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = SpringConfiguration.class)
+@ContextConfiguration(classes = SpringConfigurationForTest.class)
 public class AggregationPerformanceTest {
 
 
@@ -58,7 +60,10 @@ public class AggregationPerformanceTest {
     return ret;
   }
 
-//  @Ignore
+  /*
+   * This is a starting point for a 'real' integration test that measures performance
+   */
+  @Ignore
   @Test
   public void test() {
     List<String> sps = randomStrings(100);

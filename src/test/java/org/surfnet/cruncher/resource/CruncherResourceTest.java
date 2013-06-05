@@ -34,13 +34,13 @@ import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.surfnet.cruncher.config.SpringConfiguration;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.SpStatistic;
+import org.surfnet.cruncher.unittest.config.SpringConfigurationForTest;
 
 @SuppressWarnings("unchecked")
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = SpringConfiguration.class)
+@ContextConfiguration(classes = SpringConfigurationForTest.class)
 public class CruncherResourceTest {
 
   @Inject

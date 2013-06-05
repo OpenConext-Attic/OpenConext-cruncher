@@ -27,7 +27,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -38,7 +37,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 import org.surfnet.cruncher.model.LoginEntry;
-import org.surfnet.cruncher.test.config.SpringConfigurationForTest;
+import org.surfnet.cruncher.unittest.config.SpringConfigurationForTest;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)

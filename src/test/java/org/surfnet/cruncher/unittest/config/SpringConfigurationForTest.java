@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.surfnet.cruncher.test.config;
+package org.surfnet.cruncher.unittest.config;
 
 import javax.inject.Inject;
 
@@ -41,7 +41,7 @@ import com.googlecode.flyway.core.Flyway;
  * The component scan can be used to add packages and exclusions to the default
  * package
  */
-@ComponentScan(basePackages = {"org.surfnet.cruncher.test.config","org.surfnet.cruncher.repository","org.surfnet.cruncher.message"})
+@ComponentScan(basePackages = {"org.surfnet.cruncher.test.config","org.surfnet.cruncher.repository","org.surfnet.cruncher.message","org.surfnet.cruncher.resource"})
 @EnableTransactionManagement
 public class SpringConfigurationForTest {
 
