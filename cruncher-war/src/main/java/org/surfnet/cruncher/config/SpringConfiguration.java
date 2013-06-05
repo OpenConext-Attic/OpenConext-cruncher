@@ -39,7 +39,7 @@ import com.googlecode.flyway.core.Flyway;
 
 @EnableScheduling
 @Configuration
-@PropertySource("classpath:cruncher.application.properties")
+@PropertySource("classpath:cruncher.properties")
 @ImportResource("classpath:aggregationScheduling.xml")
 /*
  * The component scan can be used to add packages and exclusions to the default

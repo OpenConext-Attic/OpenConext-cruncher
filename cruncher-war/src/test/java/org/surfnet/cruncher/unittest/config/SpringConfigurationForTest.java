@@ -35,7 +35,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.googlecode.flyway.core.Flyway;
 
 @Configuration
-@PropertySource("classpath:cruncher.application.properties")
+@PropertySource("classpath:cruncher.properties")
 @ImportResource("classpath:property-placeholder.xml")
 /*
  * The component scan can be used to add packages and exclusions to the default
