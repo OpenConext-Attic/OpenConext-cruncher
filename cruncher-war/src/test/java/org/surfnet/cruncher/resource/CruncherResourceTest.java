@@ -18,7 +18,6 @@ package org.surfnet.cruncher.resource;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -34,6 +33,8 @@ import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.SpStatistic;
 import org.surfnet.cruncher.unittest.config.SpringConfigurationForTest;
@@ -41,6 +42,8 @@ import org.surfnet.cruncher.unittest.config.SpringConfigurationForTest;
 @SuppressWarnings("unchecked")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringConfigurationForTest.class)
+@Transactional
+@TransactionConfiguration(defaultRollback=true)
 public class CruncherResourceTest {
 
   @Inject

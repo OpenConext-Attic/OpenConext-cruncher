@@ -33,7 +33,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.surfnet.cruncher.config.SpringConfiguration;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 import org.surfnet.cruncher.message.Aggregator;
 import org.surfnet.cruncher.model.LoginEntry;
 import org.surfnet.cruncher.unittest.config.SpringConfigurationForTest;
@@ -41,6 +42,8 @@ import org.surfnet.cruncher.unittest.config.SpringConfigurationForTest;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringConfigurationForTest.class)
+@Transactional
+@TransactionConfiguration(defaultRollback=true)
 public class AggregationPerformanceTest {
 
 
