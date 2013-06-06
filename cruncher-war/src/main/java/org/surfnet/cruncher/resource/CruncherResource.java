@@ -53,7 +53,8 @@ public class CruncherResource {
   @Path("/lastlogin")
   public Response getRecentLoginsForUser(@Context HttpServletRequest request, @QueryParam("userId") String userId,
       @QueryParam("idpEntityId") String idpEntityId) {
-
+    invariant(userId, idpEntityId);
+    
     final List<SpStatistic> recentLogins = statisticsRepository.getActiveServices(userId, idpEntityId);
     LOG.info("returning recent logins for " + userId + " on " + idpEntityId);
     return Response.ok(recentLogins).build();
@@ -80,7 +81,6 @@ public class CruncherResource {
   public Response getLoginsPerInterval(@Context HttpServletRequest request, @QueryParam("startDate") Long startDate,
       @QueryParam("endDate") Long endDate, @QueryParam("idpEntityId") String idpEntityId,
       @QueryParam("spEntityId") String spEntityId) {
-
     invariant(startDate, endDate);
 
     List<LoginData> result = statisticsRepository.getLogins(new LocalDate(startDate), new LocalDate(endDate),
@@ -89,10 +89,14 @@ public class CruncherResource {
     return Response.ok(result).build();
   }
 
-
   private void invariant(Long startDate, Long endDate) {
     Assert.notNull(startDate, "startDate is a required query parameter");
     Assert.notNull(endDate, "endDate is a required query parameter");
+  }
+  
+  private void invariant(String userId, String idpEntityId) {
+    Assert.notNull(userId, "userId is a required query parameter");
+    Assert.notNull(idpEntityId, "idpEntityId is a required query parameter");
   }
 
 }
