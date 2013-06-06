@@ -21,7 +21,6 @@ package org.surfnet.cruncher;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -44,40 +43,32 @@ public class CruncherClient implements Cruncher {
   /**
    * OAuth2 Client Key (from the JS oauth2 client when this client was registered
    */
-  @Value("${cruncher.client.key}")
   private String cruncherClientKey;
 
   /**
    * OAuth2 Client Secret (from the JS oauth2 client when this client was registered
    */
-  @Value("${cruncher.client.secret}")
   private String cruncherClientSecret;
 
   /**
    * Location of the Authorization Server for getting a client credential
    */
-  @Value("${apis.oauth2.authorization.url}")
   private String apisOAuth2AuthorizationUrl;
 
   /**
    * Location of the cruncher Resource Server
    */
-  @Value("${cruncher.base.url}")
   private String cruncherBaseLocation;
 
   private String accessToken;
 
   private RestTemplate restTemplate = new RestTemplate();
 
-  public CruncherClient() {
-  }
-
   public CruncherClient(String cruncherClientKey, String cruncherClientSecret, String cruncherBaseLocation, String apisOAuth2AuthorizationUrl) {
     this.cruncherClientKey = cruncherClientKey;
     this.cruncherClientSecret = cruncherClientSecret;
     this.cruncherBaseLocation = cruncherBaseLocation;
     this.apisOAuth2AuthorizationUrl = apisOAuth2AuthorizationUrl;
-    this.accessToken = getAccessToken();
     // we handle invalid access_token ourselves
     restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
       protected boolean hasError(HttpStatus statusCode) {
@@ -197,5 +188,21 @@ public class CruncherClient implements Cruncher {
       result.add(t);
     }
     return (T) result;
+  }
+
+  public void setCruncherClientKey(String cruncherClientKey) {
+    this.cruncherClientKey = cruncherClientKey;
+  }
+
+  public void setCruncherClientSecret(String cruncherClientSecret) {
+    this.cruncherClientSecret = cruncherClientSecret;
+  }
+
+  public void setCruncherBaseLocation(String cruncherBaseLocation) {
+    this.cruncherBaseLocation = cruncherBaseLocation;
+  }
+
+  public void setApisOAuth2AuthorizationUrl(String apisOAuth2AuthorizationUrl) {
+    this.apisOAuth2AuthorizationUrl = apisOAuth2AuthorizationUrl;
   }
 }
