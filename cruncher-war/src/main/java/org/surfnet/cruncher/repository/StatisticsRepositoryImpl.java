@@ -32,7 +32,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,12 +176,11 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   public List<SpStatistic> getActiveServices(String userid, String idpEntityId) {
     NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     
-    String query = "select max(loginstamp) as loginstamp, spentityid as spentityid, " +
-    		"max(spentityname) as spentityname from log_logins " +
+    String query = "select loginstamp as loginstamp, spentityid as spentityid, " +
+    		"spentityname as spentityname from user_log_logins " +
         "where " +
         "userid = :userId AND " +
-        "idpentityid = :idpEntityId " +
-        "group by spentityid";
+        "idpentityid = :idpEntityId ";
     
     Map<String, Object> parameterMap = new HashMap<String, Object>();
     parameterMap.put("userId", userid);
@@ -277,9 +275,9 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   @Override
   public void insertLastLogin(LoginEntry le) {
     LOG.debug("Inserting new aggregated user record for last login on date {}, record: {}", new Object[] {le.getLoginDate(), le});
-    jdbcTemplate.update("insert into user_log_logins (loginstamp,userid,spentityid,spentityname,usersphash)" +
-      " values (?, ?, ?, ?, ?)",
-      le.getLoginDate(), le.getUserId(), le.getSpEntityId(), le.getSpEntityName(), aggregationRecordHash(le.getUserId(), le.getSpEntityId()));
+    jdbcTemplate.update("insert into user_log_logins (loginstamp,userid,spentityid,spentityname,idpentityid,usersphash)" +
+      " values (?, ?, ?, ?, ?, ?)",
+      le.getLoginDate(), le.getUserId(), le.getSpEntityId(), le.getSpEntityName(), le.getIdpEntityId(), aggregationRecordHash(le.getUserId(), le.getSpEntityId()));
   }
 
   @Override

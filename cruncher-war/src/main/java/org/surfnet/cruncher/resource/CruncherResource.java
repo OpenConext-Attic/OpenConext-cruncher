@@ -25,19 +25,16 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.SpStatistic;
 import org.surfnet.cruncher.repository.StatisticsRepository;
@@ -94,7 +91,7 @@ public class CruncherResource {
 
 
   private void invariant(Long startDate, Long endDate) {
-    Assert.notNull(endDate, "startDate is a required query parameter");
+    Assert.notNull(startDate, "startDate is a required query parameter");
     Assert.notNull(endDate, "endDate is a required query parameter");
   }
 

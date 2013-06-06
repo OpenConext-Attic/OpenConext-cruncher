@@ -19,6 +19,7 @@ CREATE TABLE `user_log_logins` (
   `userid` varchar(1000) NOT NULL,
   `spentityid` varchar(1000) NOT NULL,
   `spentityname` varchar(1000) DEFAULT NULL,
+  `idpentityid` varchar(1000) NOT NULL,
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `usersphash` char(40) NOT NULL,
   PRIMARY KEY (`id`),

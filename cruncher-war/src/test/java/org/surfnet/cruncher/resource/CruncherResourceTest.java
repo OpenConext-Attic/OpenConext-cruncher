@@ -18,6 +18,7 @@ package org.surfnet.cruncher.resource;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -35,6 +36,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Transactional;
+import org.surfnet.cruncher.message.Aggregator;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.SpStatistic;
 import org.surfnet.cruncher.unittest.config.SpringConfigurationForTest;
@@ -48,6 +50,9 @@ public class CruncherResourceTest {
 
   @Inject
   private CruncherResource cruncherResource;
+  
+  @Inject
+  private Aggregator aggregator;
 
   @Inject
   private JdbcTemplate jdbcTemplate;
@@ -119,7 +124,13 @@ public class CruncherResourceTest {
 
   @Test
   public void testIllegalArguments() {
-    List<LoginData> result = (List<LoginData>) cruncherResource.getLoginsPerInterval(request, 0L, 0L, null, null).getEntity();
+    cruncherResource.getLoginsPerInterval(request, 0L, 0L, null, null).getEntity();
+    try {
+      cruncherResource.getLoginsPerInterval(request, null, null, null, null).getEntity();
+      fail("illegal start and end date may not be null");
+    } catch(IllegalArgumentException e) {
+      //expected
+    }
   }
 
   @Test
@@ -141,6 +152,7 @@ public class CruncherResourceTest {
   
   @Test
   public void getActiveServices() {
+    aggregator.run();
     Response response = cruncherResource.getRecentLoginsForUser(request, "user_1", "idp2");
     List<SpStatistic> result = (List<SpStatistic>) response.getEntity();
     assertNotNull(result);
