@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.surfnet.cruncher.model.LoginEntry;
 import org.surfnet.cruncher.repository.StatisticsRepository;
 
@@ -46,20 +45,33 @@ public class Aggregator {
     return DigestUtils.sha1Hex(input);
   }
 
+  public static String aggregationRecordHash(String userId, String spEntityId) {
+    String input = userId + "!" + spEntityId;
+    return DigestUtils.sha1Hex(input);
+  }
+
   @Inject
   private StatisticsRepository statisticsRepository;
 
   @Value("${aggregation.batch-size}")
   private int batchSize;
 
-  @Transactional
+  /*
+   * When a (runtime) exception occurs, the active bit is *not* set to 0, this means
+   * crunching is disabled until the original error is recovered
+   */
   public void run() {
     LOG.debug("Running aggregation task, batch size {}", batchSize);
-    List<LoginEntry> entries = statisticsRepository.getUnprocessedLoginEntries(batchSize);
-    LOG.debug("Got {} unprocessed login entries", entries.size());
-    aggregateLogin(entries);
-    if (entries.size() > 0) {
-      statisticsRepository.setLoginEntriesProcessed(entries);
+    if (statisticsRepository.lockForCrunching()) {
+      List<LoginEntry> entries = statisticsRepository.getUnprocessedLoginEntries(batchSize);
+      LOG.debug("Got {} unprocessed login entries", entries.size());
+      aggregateLogin(entries);
+      if (entries.size() > 0) {
+        statisticsRepository.setLoginEntriesProcessed(entries);
+      }
+      statisticsRepository.unlockForCrunching();
+    } else {
+      LOG.debug("Someone else is crunching, not doing anything");
     }
   }
 
@@ -74,6 +86,7 @@ public class Aggregator {
     }
 
     for (LoginEntry le : loginEntries) {
+      //aggregate the login
       if (entryForDayExists(le)) {
         LOG.trace("Updating existing aggregated record for date {}, record: {}", le.getLoginDate(), le);
         statisticsRepository.updateAggregated(le.getIdpEntityId(), le.getSpEntityId(), le.getLoginDate());
@@ -81,7 +94,20 @@ public class Aggregator {
         LOG.trace("Inserting aggregated record for date {}, record: {}", le.getLoginDate(), le);
         statisticsRepository.insertAggregated(le);
       }
+      
+      //aggregate for the user
+      if (entryForUserExists(le)) {
+        LOG.trace("Updating existing aggregated record for date {}, record: {}", le.getLoginDate(), le);
+        statisticsRepository.updateLastLogin(le.getUserId(), le.getSpEntityId(), le.getLoginDate());
+      } else {
+        LOG.trace("Inserting aggregated record for date {}, record: {}", le.getLoginDate(), le);
+        statisticsRepository.insertLastLogin(le);
+      }
     }
+  }
+
+  private boolean entryForUserExists(LoginEntry le) {
+    return statisticsRepository.lastLogonExists(le.getUserId(), le.getSpEntityId());
   }
 
   /**

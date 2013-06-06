@@ -23,16 +23,15 @@ import java.util.Date;
  * Class that represents a user login on OpenConext.
  */
 public class LoginEntry implements Serializable {
+  private static final long serialVersionUID = -3406146073511813593L;
 
-  public LoginEntry(String idpEntityId, String idpEntityName, Date loginDate, String spEntityId, String spEntityName, String userAgent, String userId, String voName) {
+  public LoginEntry(String idpEntityId, String idpEntityName, Date loginDate, String spEntityId, String spEntityName, String userId) {
     this.idpEntityId = idpEntityId;
     this.idpEntityName = idpEntityName;
     this.loginDate = loginDate;
     this.spEntityId = spEntityId;
     this.spEntityName = spEntityName;
-    this.userAgent = userAgent;
     this.userId = userId;
-    this.voName = voName;
   }
 
   private Date loginDate;
@@ -41,8 +40,6 @@ public class LoginEntry implements Serializable {
   private String idpEntityId;
   private String spEntityName;
   private String idpEntityName;
-  private String userAgent;
-  private String voName;
 
   public Date getLoginDate() {
     return loginDate;
@@ -63,4 +60,15 @@ public class LoginEntry implements Serializable {
   public String getIdpEntityName() {
     return idpEntityName;
   }
+
+  public String getUserId() {
+    return userId;
+  }
+
+  @Override
+  public String toString() {
+    return "Login at "+loginDate+" of "+userId+" on "+ idpEntityId +" sp " + spEntityId;
+  }
+  
+  
 }

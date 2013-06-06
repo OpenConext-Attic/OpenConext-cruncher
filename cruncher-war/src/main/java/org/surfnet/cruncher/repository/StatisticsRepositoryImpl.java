@@ -18,7 +18,20 @@
  */
 package org.surfnet.cruncher.repository;
 
-import org.apache.commons.codec.digest.DigestUtils;
+import static org.surfnet.cruncher.message.Aggregator.aggregationRecordHash;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -30,15 +43,6 @@ import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.LoginEntry;
 import org.surfnet.cruncher.model.SpStatistic;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
 @Named
 public class StatisticsRepositoryImpl implements StatisticsRepository {
 
@@ -46,21 +50,6 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
 
   @Inject
   private JdbcTemplate jdbcTemplate;
-
-
-
-
-  private String aggregationRecordHash(LoginEntry le) {
-    return aggregationRecordHash(le.getIdpEntityId(), le.getSpEntityId(), le.getLoginDate());
-  }
-
-  private String aggregationRecordHash(String idpEntityId, String spEntityId, Date loginDate) {
-    final DateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
-    String input = dateformat.format(loginDate) + "!" + idpEntityId + "!" + spEntityId;
-    return DigestUtils.sha1Hex(input);
-  }
-
-
 
   @Override
   public List<LoginData> getUniqueLogins(final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId) {
@@ -218,13 +207,18 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   public List<LoginEntry> getUnprocessedLoginEntries(int nrOfRecords) {
     Long aggregateStartingPoint = jdbcTemplate.queryForLong("select aggregatepoint from aggregate_meta_data");
     
+    // never aggregate the last 10 minutes
+    long now = System.currentTimeMillis();
+    now = now - 10L * 60L * 1000L;
+    
     NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     
-    String query = "select * from log_logins where loginstamp > :startingPoint order by loginstamp LIMIT :batchSize";
+    String query = "select * from log_logins where loginstamp > :startingPoint and loginstamp < :now order by loginstamp LIMIT :batchSize";
     
     Map<String, Object> parameterMap = new HashMap<String, Object>();
     parameterMap.put("batchSize", nrOfRecords);
     parameterMap.put("startingPoint", new Timestamp(aggregateStartingPoint));
+    parameterMap.put("now", new Timestamp(now));
     
     return namedJdbcTemplate.query(query, parameterMap , new RowMapper<LoginEntry>(){
       @Override
@@ -234,10 +228,8 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
         Date loginDate = new Date(rs.getTimestamp("loginstamp").getTime());
         String spEntityId = rs.getString("spentityid");
         String spEntityName = rs.getString("spentityname");
-        String userAgent = rs.getString("useragent");
         String userId = rs.getString("userid");
-        String voName = rs.getString("voname");
-        return new LoginEntry(idpEntityId, idpEntityName, loginDate, spEntityId, spEntityName, userAgent, userId, voName);
+        return new LoginEntry(idpEntityId, idpEntityName, loginDate, spEntityId, spEntityName, userId);
       }
     });
   }
@@ -264,5 +256,34 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   @Override
   public boolean aggregatedExists(String idpEntityId, String spEntityId, Date loginDate) {
     return jdbcTemplate.queryForInt("select count(*) from aggregated_log_logins where datespidphash = ?", aggregationRecordHash(idpEntityId, spEntityId, loginDate)) == 1;
+  }
+
+  @Override
+  public boolean lockForCrunching() {
+    int rowCount = jdbcTemplate.update("update aggregate_meta_data set active=1 where active=0");
+    return rowCount != 0;
+  }
+
+  @Override
+  public void unlockForCrunching() {
+    jdbcTemplate.update("update aggregate_meta_data set active=0");
+  }
+
+  @Override
+  public boolean lastLogonExists(String userId, String spEntityId) {
+    return jdbcTemplate.queryForInt("select count(*) from user_log_logins where usersphash = ?", aggregationRecordHash(userId, spEntityId)) == 1;
+  }
+
+  @Override
+  public void insertLastLogin(LoginEntry le) {
+    LOG.debug("Inserting new aggregated user record for last login on date {}, record: {}", new Object[] {le.getLoginDate(), le});
+    jdbcTemplate.update("insert into user_log_logins (loginstamp,userid,spentityid,spentityname,usersphash)" +
+      " values (?, ?, ?, ?, ?)",
+      le.getLoginDate(), le.getUserId(), le.getSpEntityId(), le.getSpEntityName(), aggregationRecordHash(le.getUserId(), le.getSpEntityId()));
+  }
+
+  @Override
+  public void updateLastLogin(String userId, String spEntityId, Date loginDate) {
+    jdbcTemplate.update("update user_log_logins set loginstamp = ? where usersphash = ?", loginDate, aggregationRecordHash(userId, spEntityId));
   }
 }

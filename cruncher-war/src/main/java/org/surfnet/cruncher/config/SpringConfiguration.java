@@ -30,10 +30,7 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.googlecode.flyway.core.Flyway;
 
@@ -46,7 +43,6 @@ import com.googlecode.flyway.core.Flyway;
  * package
  */
 @ComponentScan(basePackages = {"org.surfnet.cruncher"})
-@EnableTransactionManagement
 public class SpringConfiguration {
 
   @Inject
@@ -90,10 +86,5 @@ public class SpringConfiguration {
   @Bean
   public JdbcTemplate jdbcTemplate() {
     return new JdbcTemplate(dataSource());
-  }
-
-  @Bean
-  public PlatformTransactionManager transactionManager() {
-      return new DataSourceTransactionManager(dataSource());
   }
 }

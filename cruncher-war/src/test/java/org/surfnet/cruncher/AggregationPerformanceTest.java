@@ -84,7 +84,7 @@ public class AggregationPerformanceTest {
         String idp = idps.get(randomGenerator.nextInt(idps.size()));
         String sp = sps.get(randomGenerator.nextInt(sps.size()));
         String user = users.get(randomGenerator.nextInt(users.size()));
-        LoginEntry login = new LoginEntry(idp, idp, date, sp, sp, "", user, "");
+        LoginEntry login = new LoginEntry(idp, idp, date, sp, sp, user);
         aggregator.aggregateLogin(Arrays.asList(login));
       }
     }

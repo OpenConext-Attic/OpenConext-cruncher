@@ -16,9 +16,15 @@
 
 package org.surfnet.cruncher.message;
 
+import static java.util.Calendar.DAY_OF_MONTH;
+import static java.util.Calendar.MONDAY;
+import static java.util.Calendar.YEAR;
 import static org.junit.Assert.assertEquals;
 import static org.surfnet.cruncher.message.Aggregator.aggregationRecordHash;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -32,18 +38,15 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 import org.surfnet.cruncher.model.LoginEntry;
 import org.surfnet.cruncher.unittest.config.SpringConfigurationForTest;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringConfigurationForTest.class)
-@TransactionConfiguration(defaultRollback=true)
-@Transactional
 public class AggregatorTest {
   private static final Logger LOG = LoggerFactory.getLogger(AggregatorTest.class);
 
@@ -69,8 +72,24 @@ public class AggregatorTest {
  
     long entryCount = jdbcTemplate.queryForLong("select entrycount from aggregated_log_logins where datespidphash = ?", hash);
     assertEquals(2, entryCount);
-    long timestamp = jdbcTemplate.queryForLong("select * from aggregate_meta_data");
+    long timestamp = jdbcTemplate.queryForLong("select aggregatepoint from aggregate_meta_data");
     assertEquals(1335088121000L, timestamp);
+    
+    String userHash = aggregationRecordHash("user_1","sp1");
+    long lastlogin = jdbcTemplate.queryForObject("select loginstamp from user_log_logins where usersphash = '" + userHash+"'", new RowMapper<Long>() {
+
+      @Override
+      public Long mapRow(ResultSet rs, int rowNum) throws SQLException {
+        return rs.getTimestamp(1).getTime();
+      }
+      
+    });
+    instance.setTimeInMillis(lastlogin);
+    
+    //2012-04-20 11:48:41
+    assertEquals(20, instance.get(DAY_OF_MONTH));
+    assertEquals(3, instance.get(MONDAY));
+    assertEquals(2012, instance.get(YEAR));
   }
 
   @Test
@@ -81,8 +100,8 @@ public class AggregatorTest {
   @Test
   public void aggregateList() {
     int rowCountBefore = jdbcTemplate.queryForInt(sqlRowCountAggregated);
-    LoginEntry loginEntry = new LoginEntry("someIdp", "marker0", new Date(), "someSp", "", "", "", "");
-    LoginEntry loginEntry2 = new LoginEntry("someIdp", "marker0", new Date(), "someSp", "", "", "", "");
+    LoginEntry loginEntry = new LoginEntry("someIdp", "marker0", new Date(), "someSp", "", "");
+    LoginEntry loginEntry2 = new LoginEntry("someIdp", "marker0", new Date(), "someSp", "", "");
 
     aggregator.aggregateLogin(Arrays.asList(loginEntry, loginEntry2));
 
@@ -95,10 +114,10 @@ public class AggregatorTest {
   @Test
   public void aggregateDifferentSpIdp() {
     int rowCountBefore = jdbcTemplate.queryForInt(sqlRowCountAggregated);
-    LoginEntry loginEntry1 = new LoginEntry("someIdp1", "marker1", new Date(), "someSp1", "", "", "", "");
-    LoginEntry loginEntry2 = new LoginEntry("someIdp2", "marker1", new Date(), "someSp1", "", "", "", "");
-    LoginEntry loginEntry3 = new LoginEntry("someIdp1", "marker1", new Date(), "someSp2", "", "", "", "");
-    LoginEntry loginEntry4 = new LoginEntry("someIdp2", "marker1", new Date(), "someSp2", "", "", "", "");
+    LoginEntry loginEntry1 = new LoginEntry("someIdp1", "marker1", new Date(), "someSp1", "", "");
+    LoginEntry loginEntry2 = new LoginEntry("someIdp2", "marker1", new Date(), "someSp1", "", "");
+    LoginEntry loginEntry3 = new LoginEntry("someIdp1", "marker1", new Date(), "someSp2", "", "");
+    LoginEntry loginEntry4 = new LoginEntry("someIdp2", "marker1", new Date(), "someSp2", "", "");
 
     aggregator.aggregateLogin(Arrays.asList(loginEntry1, loginEntry2, loginEntry3, loginEntry4));
 
@@ -112,4 +131,37 @@ public class AggregatorTest {
     assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(3));
   }
 
+  /*
+   * This test is more useful with a debugger attached. But at least if no
+   * exception occur this is a good sign.
+   */
+  @Test
+  public void testConcurrency() throws InterruptedException {
+    for (int j = 0; j < 5; j++) {
+      List<Thread> threads = new ArrayList<Thread>();
+
+      for (int i = 0; i < 20; i++) {
+        Thread t = new Thread(new AggregatorTread(aggregator));
+        threads.add(t);
+        t.start();
+      }
+
+      for (Thread t : threads) {
+        t.join();
+      }
+    }
+  }
+}
+
+class AggregatorTread implements Runnable {
+  private final Aggregator aggregator;
+  
+  public AggregatorTread(final Aggregator aggregator) {
+    this.aggregator = aggregator;
+  }
+  
+  @Override
+  public void run() {
+    aggregator.run();
+  }
 }

@@ -78,4 +78,14 @@ public interface StatisticsRepository {
   void insertAggregated(LoginEntry le);
 
   boolean aggregatedExists(String idpEntityId, String spEntityId, Date loginDate);
+
+  boolean lockForCrunching();
+
+  void unlockForCrunching();
+
+  boolean lastLogonExists(String userId, String idpEntityId);
+
+  void insertLastLogin(LoginEntry le);
+
+  void updateLastLogin(String userId, String spEntityId, Date loginDate);
 }
