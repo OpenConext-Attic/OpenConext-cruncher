@@ -18,22 +18,28 @@
  */
 package org.surfnet.cruncher;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.surfnet.cruncher.model.SpStatistic;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 public class CruncherClient implements Cruncher {
@@ -78,28 +84,28 @@ public class CruncherClient implements Cruncher {
   }
 
   @Override
-  public String getLogins() {
-    return doJsonGetFromCruncher("/logins?startDate={startDate}&endDate={endDate}", getLoginsVariables(null, null));
+  public String getLogins(final Date startDate, final Date endDate) {
+    return doJsonGetFromCruncher("/logins?startDate={startDate}&endDate={endDate}", getLoginsVariables(startDate, endDate, null, null));
   }
 
   @Override
-  public String getLoginsByIdpAndSp(String idpEntityId, String spEntityId) {
-    return doJsonGetFromCruncher("/logins?startDate={startDate}&endDate={endDate}&idpEntityId={idpEntityId}&spEntityId={spEntityId}", getLoginsVariables(spEntityId, idpEntityId));
+  public String getLoginsByIdpAndSp(final Date startDate, final Date endDate, String idpEntityId, String spEntityId) {
+    return doJsonGetFromCruncher("/logins?startDate={startDate}&endDate={endDate}&idpEntityId={idpEntityId}&spEntityId={spEntityId}", getLoginsVariables(startDate, endDate, spEntityId, idpEntityId));
   }
 
   @Override
-  public String getLoginsByIdp(String idpEntityId) {
-    return doJsonGetFromCruncher("/logins?startDate={startDate}&endDate={endDate}&idpEntityId={idpEntityId}", getLoginsVariables(null, idpEntityId));
+  public String getLoginsByIdp(final Date startDate, final Date endDate, String idpEntityId) {
+    return doJsonGetFromCruncher("/logins?startDate={startDate}&endDate={endDate}&idpEntityId={idpEntityId}", getLoginsVariables(startDate, endDate, null, idpEntityId));
   }
 
   @Override
-  public String getLoginsBySp(String spEntityId) {
-    return doJsonGetFromCruncher("/logins?startDate={startDate}&endDate={endDate}&spEntityId={spEntityId}", getLoginsVariables(spEntityId, null));
+  public String getLoginsBySp(final Date startDate, final Date endDate, String spEntityId) {
+    return doJsonGetFromCruncher("/logins?startDate={startDate}&endDate={endDate}&spEntityId={spEntityId}", getLoginsVariables(startDate, endDate, spEntityId, null));
   }
 
   @Override
   public List<SpStatistic> getRecentLoginsForUser(String userId, String idpEntityId) {
-    Map variables = new HashMap<String, Object>();
+    Map<String, String> variables = new HashMap<String, String>();
     variables.put("idpEntityId", idpEntityId);
     variables.put("userId", userId);
     return (List<SpStatistic>) doGetFromCruncher("/lastlogin?idpEntityId={idpEntityId}&userId={userId}", variables, SpStatistic[].class, true);
@@ -165,16 +171,16 @@ public class CruncherClient implements Cruncher {
     }
   }
 
-  private Map<String, Object> getLoginsVariables(String spEntityId, String idpEntityId) {
-    Map variables = new HashMap<String, Object>();
+  private Map<String, Object> getLoginsVariables(final Date startDate, final Date endDate, String spEntityId, String idpEntityId) {
+    Map<String, Object> variables = new HashMap<String, Object>();
     if (StringUtils.hasText(idpEntityId)) {
       variables.put("idpEntityId", idpEntityId);
     }
     if (StringUtils.hasText(spEntityId)) {
       variables.put("spEntityId", spEntityId);
     }
-    variables.put("startDate", 0L);
-    variables.put("endDate", System.currentTimeMillis());
+    variables.put("startDate", startDate.getTime());
+    variables.put("endDate", endDate.getTime());
     return variables;
   }
 

@@ -39,6 +39,7 @@ import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.SpStatistic;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
@@ -88,26 +89,26 @@ public class CruncherClientTestIntegration {
 
   @Test
   public void getLogins() {
-    String json = cruncherClient.getLogins();
+    String json = cruncherClient.getLogins(new Date(0L), new Date());
     List<LoginData> logins = getLoginDatas(json);
     assertEquals(7, logins.size());
   }
 
   @Test
   public void getLoginsByIdpAndSp() {
-    String json = cruncherClient.getLoginsByIdpAndSp("idp1","sp1");
+    String json = cruncherClient.getLoginsByIdpAndSp(new Date(0L), new Date(), "idp1","sp1");
     List<LoginData> logins = getLoginDatas(json);
     assertEquals(1, logins.size());
   }
   @Test
   public void getLoginsByIdp() {
-    String json = cruncherClient.getLoginsByIdp("idp1");
+    String json = cruncherClient.getLoginsByIdp(new Date(0L), new Date(), "idp1");
     List<LoginData> logins = getLoginDatas(json);
     assertEquals(2, logins.size());
   }
   @Test
   public void getLoginsBySp() {
-    String json = cruncherClient.getLoginsBySp("sp1");
+    String json = cruncherClient.getLoginsBySp(new Date(0L), new Date(), "sp1");
     List<LoginData> logins = getLoginDatas(json);
     assertEquals(2, logins.size());
   }

@@ -20,6 +20,7 @@ package org.surfnet.cruncher;
 
 import org.surfnet.cruncher.model.SpStatistic;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -28,13 +29,13 @@ import java.util.List;
  */
 public interface Cruncher {
 
-  String getLogins();
+  String getLogins(Date startDate, Date endDate);
 
-  String getLoginsByIdpAndSp( String idpEntityId,  String spEntityId);
+  String getLoginsByIdpAndSp(Date startDate, Date endDate, String idpEntityId,  String spEntityId);
 
-  String getLoginsByIdp( String idpEntityId);
+  String getLoginsByIdp(Date startDate, Date endDate, String idpEntityId);
 
-  String getLoginsBySp( String spEntityId);
+  String getLoginsBySp(Date startDate, Date endDate, String spEntityId);
 
   List<SpStatistic> getRecentLoginsForUser(String userId, String idpEntityId);
 
