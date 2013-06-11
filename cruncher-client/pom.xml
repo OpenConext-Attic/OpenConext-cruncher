@@ -95,6 +95,10 @@
       <artifactId>javax.inject</artifactId>
       <version>1</version>
     </dependency>
+    <dependency>
+      <groupId>org.surfnet.coin</groupId>
+      <artifactId>csa-client</artifactId>
+    </dependency>
   </dependencies>
 
 </project>

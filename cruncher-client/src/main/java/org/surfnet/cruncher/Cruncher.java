@@ -18,6 +18,7 @@
  */
 package org.surfnet.cruncher;
 
+import nl.surfnet.coin.oauth.OauthClient;
 import org.surfnet.cruncher.model.SpStatistic;
 
 import java.util.Date;
@@ -39,4 +40,5 @@ public interface Cruncher {
 
   List<SpStatistic> getRecentLoginsForUser(String userId, String idpEntityId);
 
+  void setOauthClient(OauthClient oc);
 }

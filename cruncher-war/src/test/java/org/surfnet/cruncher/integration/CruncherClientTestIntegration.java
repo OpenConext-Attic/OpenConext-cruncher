@@ -18,6 +18,7 @@
  */
 package org.surfnet.cruncher.integration;
 
+import nl.surfnet.coin.oauth.ClientCredentialsClient;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -45,7 +46,7 @@ import java.util.List;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
-public class CruncherClientTestIntegration {
+public class  CruncherClientTestIntegration {
 
   private static String cruncherBaseLocation = "http://localhost:8080/cruncher/stats/v1";
 
@@ -75,7 +76,12 @@ public class CruncherClientTestIntegration {
     });
     String apisOAuth2AuthorizationUrl = String.format("http://%s:%d/oauth2/token", oauth2AuthServer.getServiceAddress().getHostName(),
             oauth2AuthServer.getServiceAddress().getPort());
-    cruncherClient = new CruncherClient("key", "secret", cruncherBaseLocation, apisOAuth2AuthorizationUrl);
+    cruncherClient = new CruncherClient(cruncherBaseLocation);
+    ClientCredentialsClient oauthClient = new ClientCredentialsClient();
+    oauthClient.setClientKey("key");
+    oauthClient.setClientSecret("secret");
+    oauthClient.setOauthAuthorizationUrl(apisOAuth2AuthorizationUrl);
+    cruncherClient.setOauthClient(oauthClient);
   }
 
   @Test

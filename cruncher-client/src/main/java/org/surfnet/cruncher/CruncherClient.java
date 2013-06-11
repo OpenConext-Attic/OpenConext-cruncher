@@ -18,69 +18,27 @@
  */
 package org.surfnet.cruncher;
 
-import java.net.URI;
-import java.util.ArrayList;
+import nl.surfnet.coin.oauth.OauthClient;
+import org.springframework.util.StringUtils;
+import org.surfnet.cruncher.model.SpStatistic;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.codec.binary.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.DefaultResponseErrorHandler;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
-import org.surfnet.cruncher.model.SpStatistic;
-
 
 public class CruncherClient implements Cruncher {
 
-  private static final Logger LOG = LoggerFactory.getLogger(CruncherClient.class);
-
-  /**
-   * OAuth2 Client Key (from the JS oauth2 client when this client was registered
-   */
-  private String cruncherClientKey;
-
-  /**
-   * OAuth2 Client Secret (from the JS oauth2 client when this client was registered
-   */
-  private String cruncherClientSecret;
-
-  /**
-   * Location of the Authorization Server for getting a client credential
-   */
-  private String apisOAuth2AuthorizationUrl;
+  private OauthClient oauthClient;
 
   /**
    * Location of the cruncher Resource Server
    */
   private String cruncherBaseLocation;
 
-  private String accessToken;
-
-  private RestTemplate restTemplate = new RestTemplate();
-
-  public CruncherClient(String cruncherClientKey, String cruncherClientSecret, String cruncherBaseLocation, String apisOAuth2AuthorizationUrl) {
-    this.cruncherClientKey = cruncherClientKey;
-    this.cruncherClientSecret = cruncherClientSecret;
+  public CruncherClient(String cruncherBaseLocation) {
     this.cruncherBaseLocation = cruncherBaseLocation;
-    this.apisOAuth2AuthorizationUrl = apisOAuth2AuthorizationUrl;
-    // we handle invalid access_token ourselves
-    restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
-      protected boolean hasError(HttpStatus statusCode) {
-        return super.hasError(statusCode) && statusCode != HttpStatus.FORBIDDEN;
-      }
-    });
   }
 
   @Override
@@ -108,71 +66,21 @@ public class CruncherClient implements Cruncher {
     Map<String, String> variables = new HashMap<String, String>();
     variables.put("idpEntityId", idpEntityId);
     variables.put("userId", userId);
-    return (List<SpStatistic>) doGetFromCruncher("/lastlogin?idpEntityId={idpEntityId}&userId={userId}", variables, SpStatistic[].class, true);
+    return (List<SpStatistic>) oauthClient.exchange(cruncherBaseLocation + "/lastlogin?idpEntityId={idpEntityId}&userId={userId}", variables, SpStatistic[].class);
   }
 
-  private String doJsonGetFromCruncher(String url, Map<String, ?> variables) {
-    return doGetFromCruncher(url, variables, String.class, true);
+  @Override
+  public void setOauthClient(OauthClient oc) {
+    this.oauthClient = oc;
   }
 
-  private <T> T doGetFromCruncher(String url, Map<String, ?> variables, Class clazz, boolean retry) {
-    HttpHeaders headers = new HttpHeaders();
-    if (accessToken == null) {
-      accessToken = getAccessToken();
-    }
-    headers.add("Authorization", "bearer " + accessToken);
-
-    HttpEntity requestEntity = new HttpEntity(headers);
-    HttpMethod method = HttpMethod.GET;
-    ResponseEntity<T> response;
-
-    if (CollectionUtils.isEmpty(variables)) {
-      response = restTemplate.exchange(URI.create(cruncherBaseLocation + url), method, requestEntity, clazz);
-    } else {
-      response = restTemplate.exchange(cruncherBaseLocation + url, method, requestEntity, clazz, variables);
-    }
-    if (retry && response.getStatusCode() != HttpStatus.OK) {
-      //let's try again with a new AccessToken
-      accessToken = null;
-      doGetFromCruncher(url, variables, clazz, false);
-    }
-    T body = response.getBody();
-    if (clazz.isArray()) {
-      return getListResult((T[]) body);
-    }
-    return body;
+  private String doJsonGetFromCruncher(String subPath, Map<String, ?> variables) {
+    return oauthClient.exchange(cruncherBaseLocation + subPath, variables, String.class);
   }
 
-  /*
-   * This could be achieved using the methods we use for Csa REST calls, but it would make that implementation needless generic (e.g. complex)
-   */
-  private String getAccessToken() {
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Authorization", "Basic " + new String(Base64.encodeBase64((cruncherClientKey + ":" + cruncherClientSecret).getBytes())));
-    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-    HttpEntity<String> requestEntity = new HttpEntity<String>("grant_type=client_credentials", headers);
-    try {
-      ResponseEntity<Map> response = restTemplate.exchange(URI.create(apisOAuth2AuthorizationUrl),
-              HttpMethod.POST,
-              requestEntity,
-              Map.class);
-      if (response.getStatusCode() != HttpStatus.OK) {
-        LOG.error("Received HttpStatus {} when trying to obtain AccessToken", response.getStatusCode());
-        return null;
-      } else {
-        Map map = response.getBody();
-        return (String) map.get("access_token");
-      }
-    } catch (RestClientException e) {
-      LOG.error("Error trying to obtain AccessToken", e);
-      //this will ensure we will try again for the next call. no sensible action can be undertaken now
-      return null;
-    }
-  }
 
   private Map<String, Object> getLoginsVariables(final Date startDate, final Date endDate, String spEntityId, String idpEntityId) {
-    Map<String, Object> variables = new HashMap<String, Object>();
+    Map variables = new HashMap<String, Object>();
     if (StringUtils.hasText(idpEntityId)) {
       variables.put("idpEntityId", idpEntityId);
     }
@@ -184,31 +92,8 @@ public class CruncherClient implements Cruncher {
     return variables;
   }
 
-  /*
-   *  (T) Arrays.<T>asList(body) won't work as the type is not inferred and we end up with a list containing one entry: the array
-   */
-  private <T> T getListResult(T[] body) {
-    List<T> result = new ArrayList<T>();
-    T[] arr = body;
-    for (T t : arr) {
-      result.add(t);
-    }
-    return (T) result;
-  }
-
-  public void setCruncherClientKey(String cruncherClientKey) {
-    this.cruncherClientKey = cruncherClientKey;
-  }
-
-  public void setCruncherClientSecret(String cruncherClientSecret) {
-    this.cruncherClientSecret = cruncherClientSecret;
-  }
-
   public void setCruncherBaseLocation(String cruncherBaseLocation) {
     this.cruncherBaseLocation = cruncherBaseLocation;
   }
 
-  public void setApisOAuth2AuthorizationUrl(String apisOAuth2AuthorizationUrl) {
-    this.apisOAuth2AuthorizationUrl = apisOAuth2AuthorizationUrl;
-  }
 }
