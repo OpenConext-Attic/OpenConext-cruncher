@@ -29,16 +29,6 @@ import org.surfnet.cruncher.model.SpStatistic;
 public interface StatisticsRepository {
   
   /**
-   * return unique logins
-   * @param start
-   * @param end
-   * @param spEntityId
-   * @param idpEntityId
-   * @return
-   */
-  List<LoginData> getUniqueLogins(final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId);
-  
-  /**
    * Return aggregated logins based on IDP or SP per day.
    * <p>
    * <strong>NOTE</strong> Either sp entity ID or idp entity ID is required!

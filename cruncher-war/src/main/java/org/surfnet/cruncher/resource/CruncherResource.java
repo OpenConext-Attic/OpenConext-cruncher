@@ -61,22 +61,6 @@ public class CruncherResource {
   }
 
   @GET
-  @Path("/uniqueLogins")
-  public Response getUniqueLogins(@Context HttpServletRequest request, @QueryParam("startDate") Long startDate,
-      @QueryParam("endDate") Long endDate, @QueryParam("idpEntityId") String idpEntityId,
-      @QueryParam("spEntityId") String spEntityId) {
-    invariant(startDate, endDate);
-
-
-    LOG.debug("returning mocked response for unique logins. startDate " + startDate + " endData " + endDate
-        + " idpEntityId " + idpEntityId + " spEntityId " + spEntityId);
-    // TODO determine what a unique login is and return it
-    List<LoginData> result = statisticsRepository.getUniqueLogins(new LocalDate(startDate), new LocalDate(endDate),
-        idpEntityId, spEntityId);
-    return Response.ok(result).build();
-  }
-
-  @GET
   @Path("/logins")
   public Response getLoginsPerInterval(@Context HttpServletRequest request, @QueryParam("startDate") Long startDate,
       @QueryParam("endDate") Long endDate, @QueryParam("idpEntityId") String idpEntityId,

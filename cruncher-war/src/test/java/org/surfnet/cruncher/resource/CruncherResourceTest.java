@@ -60,32 +60,6 @@ public class CruncherResourceTest {
   private HttpServletRequest request = null; //currently never really used
   
   @Test
-  public void getUniqueLogins() {
-    LocalDate start = new LocalDate(0L);
-    LocalDate end = new LocalDate(System.currentTimeMillis());
-    Response response = cruncherResource.getUniqueLogins(request, start.toDate().getTime(), end.toDate().getTime(), "idp1", "sp1");
-    
-    List<LoginData> result = (List<LoginData>) response.getEntity();
-    assertNotNull(result);
-    assertEquals(12, result.size());
-
-    response = cruncherResource.getUniqueLogins(request, start.toDate().getTime(), end.toDate().getTime(), "idp1", "unknown");
-    result = (List<LoginData>) response.getEntity();
-    assertNotNull(result);
-    assertEquals(0, result.size());
-
-    LocalDate startDate = new LocalDate(2013, 1, 1);
-    LocalDate endDate = new LocalDate(2013, 1, 4);
-    response = cruncherResource.getUniqueLogins(request, startDate.toDate().getTime(), endDate.toDate().getTime(), "idp1", null);
-    result = (List<LoginData>) response.getEntity();
-    assertNotNull(result);
-    assertEquals(8, result.size());
-    LoginData first = result.get(0);
-    assertEquals(20, first.getTotal());
-    assertEquals("idp1", first.getIdpEntityId());
-  }
-
-  @Test
   public void getLogins() {
     LocalDate start = new LocalDate(2013, 1, 1);
     LocalDate end = new LocalDate(2013, 1, 12);

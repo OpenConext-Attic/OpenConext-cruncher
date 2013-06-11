@@ -46,45 +46,12 @@ import org.surfnet.cruncher.model.SpStatistic;
 public class StatisticsRepositoryImpl implements StatisticsRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatisticsRepositoryImpl.class);
+  public static final long POINT_INTERVAL = 1000L * 60L * 60L * 24L;
+  public static final long AGGREGATION_DELAY = 10L * 60L * 1000L;
 
   @Inject
   private JdbcTemplate jdbcTemplate;
 
-  @Override
-  public List<LoginData> getUniqueLogins(final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId) {
-    NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
-    
-    String query = "select * from aggregated_log_logins " +
-    		"where " +
-    		"entryday >= :startDate AND " +
-    		"entryday <= :endDate AND " +
-    		"(:spEntityId IS NULL OR spentityid = :spEntityId) AND " +
-        "(:idpEntityId IS NULL OR idpentityid = :idpEntityId) ";
-    		//"group by idpentityid, spentityid";
-    
-    Map<String, Object> parameterMap = new HashMap<String, Object>();
-    parameterMap.put("startDate", new Date(start.toDateMidnight().getMillis()));
-    parameterMap.put("endDate", new Date(end.toDateMidnight().getMillis()));
-    parameterMap.put("spEntityId", spEntityId);
-    parameterMap.put("idpEntityId", idpEntityId);
-    
-    return namedJdbcTemplate.query(query, parameterMap , new RowMapper<LoginData>(){
-
-      @Override
-      public LoginData mapRow(ResultSet rs, int row) throws SQLException {
-        LoginData result = new LoginData();
-        result.setIdpEntityId(rs.getString("idpentityid"));
-        result.setIdpname(rs.getString("idpentityname"));
-        result.setSpEntityId(rs.getString("spentityid"));
-        result.setSpName(rs.getString("spentityname"));
-        result.setTotal(rs.getInt("entrycount"));
-        
-        return result;
-      }
-      
-    });
-  }
-  
   /**
    * {@inheritDoc}
    */
@@ -101,12 +68,8 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
         "(:spEntityId IS NULL OR spentityid = :spEntityId) AND " +
         "(:idpEntityId IS NULL OR idpentityid = :idpEntityId) " +
         "order by idpentityid, spentityid ";
-    
-    Map<String, Object> parameterMap = new HashMap<String, Object>();
-    parameterMap.put("startDate", new Date(start.toDateMidnight().getMillis()));
-    parameterMap.put("endDate", new Date(end.toDateMidnight().getMillis()));
-    parameterMap.put("spEntityId", spEntityId);
-    parameterMap.put("idpEntityId", idpEntityId);
+
+    Map<String, Object> parameterMap = getParameterMap(start, end, idpEntityId, spEntityId);
     
     namedJdbcTemplate.query(query, parameterMap , new RowMapper<Object>() {
       Map<LocalDate, Integer> queryResult = new HashMap<LocalDate, Integer>();
@@ -165,7 +128,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
        loginData.setTotal(total);
        loginData.setPointStart(start.toDate().getTime());
        loginData.setPointEnd(end.toDate().getTime());
-       loginData.setPointInterval(1000L * 60L * 60L * 24L);
+       loginData.setPointInterval(POINT_INTERVAL);
        return loginData;
      }
     });
@@ -205,9 +168,8 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   public List<LoginEntry> getUnprocessedLoginEntries(int nrOfRecords) {
     Long aggregateStartingPoint = jdbcTemplate.queryForLong("select aggregatepoint from aggregate_meta_data");
     
-    // never aggregate the last 10 minutes
     long now = System.currentTimeMillis();
-    now = now - 10L * 60L * 1000L;
+    now = now - AGGREGATION_DELAY;
     
     NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     
@@ -284,4 +246,15 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   public void updateLastLogin(String userId, String spEntityId, Date loginDate) {
     jdbcTemplate.update("update user_log_logins set loginstamp = ? where usersphash = ?", loginDate, aggregationRecordHash(userId, spEntityId));
   }
+
+  private Map<String, Object> getParameterMap(LocalDate start, LocalDate end, String idpEntityId, String spEntityId) {
+    Map<String, Object> parameterMap = new HashMap<String, Object>();
+    parameterMap.put("startDate", new Date(start.toDateMidnight().getMillis()));
+    parameterMap.put("endDate", new Date(end.toDateMidnight().getMillis()));
+    parameterMap.put("spEntityId", spEntityId);
+    parameterMap.put("idpEntityId", idpEntityId);
+    return parameterMap;
+  }
+
+
 }
