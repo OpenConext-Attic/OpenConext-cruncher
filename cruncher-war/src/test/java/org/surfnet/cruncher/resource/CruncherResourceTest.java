@@ -55,7 +55,7 @@ public class CruncherResourceTest {
   private Aggregator aggregator;
 
   @Inject
-  private JdbcTemplate jdbcTemplate;
+  private JdbcTemplate cruncherJdbcTemplate;
   
   private HttpServletRequest request = null; //currently never really used
   

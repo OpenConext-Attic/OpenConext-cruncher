@@ -50,7 +50,10 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   public static final long AGGREGATION_DELAY = 10L * 60L * 1000L;
 
   @Inject
-  private JdbcTemplate jdbcTemplate;
+  private JdbcTemplate ebJdbcTemplate;
+  
+  @Inject
+  private JdbcTemplate cruncherJdbcTemplate;
 
   /**
    * {@inheritDoc}
@@ -59,7 +62,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   public List<LoginData> getLogins(final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId) {
     final List<LoginData> result = new ArrayList<LoginData>();
     
-    NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+    NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(cruncherJdbcTemplate);
     
     String query = "select * from aggregated_log_logins " +
         "where " +
@@ -137,7 +140,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
 
   @Override
   public List<SpStatistic> getActiveServices(String userid, String idpEntityId) {
-    NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+    NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(cruncherJdbcTemplate);
     
     String query = "select loginstamp as loginstamp, spentityid as spentityid, " +
     		"spentityname as spentityname from user_log_logins " +
@@ -166,12 +169,12 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
 
   @Override
   public List<LoginEntry> getUnprocessedLoginEntries(int nrOfRecords) {
-    Long aggregateStartingPoint = jdbcTemplate.queryForLong("select aggregatepoint from aggregate_meta_data");
+    Long aggregateStartingPoint = cruncherJdbcTemplate.queryForLong("select aggregatepoint from aggregate_meta_data");
     
     long now = System.currentTimeMillis();
     now = now - AGGREGATION_DELAY;
     
-    NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+    NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(ebJdbcTemplate);
     
     String query = "select * from log_logins where loginstamp > :startingPoint and loginstamp < :now order by loginstamp LIMIT :batchSize";
     
@@ -197,54 +200,54 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   @Override
   public void setLoginEntriesProcessed(List<LoginEntry> entries) {
     LoginEntry last = entries.get(entries.size()-1);
-    jdbcTemplate.update("update aggregate_meta_data set aggregatepoint = ?", last.getLoginDate().getTime());
+    cruncherJdbcTemplate.update("update aggregate_meta_data set aggregatepoint = ?", last.getLoginDate().getTime());
   }
 
   @Override
   public void updateAggregated(String idpEntityId, String spEntityId, Date loginDate) {
-    jdbcTemplate.update("update aggregated_log_logins set entrycount = entrycount + 1 where datespidphash = ?", aggregationRecordHash(idpEntityId, spEntityId, loginDate));
+    cruncherJdbcTemplate.update("update aggregated_log_logins set entrycount = entrycount + 1 where datespidphash = ?", aggregationRecordHash(idpEntityId, spEntityId, loginDate));
   }
 
   @Override
   public void insertAggregated(LoginEntry le) {
     LOG.debug("Inserting new aggregated record for date {}, record: {}, hash: {}", new Object[] {le.getLoginDate(), le, aggregationRecordHash(le)});
-    jdbcTemplate.update("insert into aggregated_log_logins (entryday,spentityid,idpentityid,spentityname,idpentityname, datespidphash, entrycount)" +
+    cruncherJdbcTemplate.update("insert into aggregated_log_logins (entryday,spentityid,idpentityid,spentityname,idpentityname, datespidphash, entrycount)" +
       " values (?, ?, ?, ?, ?, ?, 1)",
       le.getLoginDate(), le.getSpEntityId(), le.getIdpEntityId(), le.getSpEntityName(), le.getIdpEntityName(), aggregationRecordHash(le));
   }
 
   @Override
   public boolean aggregatedExists(String idpEntityId, String spEntityId, Date loginDate) {
-    return jdbcTemplate.queryForInt("select count(*) from aggregated_log_logins where datespidphash = ?", aggregationRecordHash(idpEntityId, spEntityId, loginDate)) == 1;
+    return cruncherJdbcTemplate.queryForInt("select count(*) from aggregated_log_logins where datespidphash = ?", aggregationRecordHash(idpEntityId, spEntityId, loginDate)) == 1;
   }
 
   @Override
   public boolean lockForCrunching() {
-    int rowCount = jdbcTemplate.update("update aggregate_meta_data set active=1 where active=0");
+    int rowCount = cruncherJdbcTemplate.update("update aggregate_meta_data set active=1 where active=0");
     return rowCount != 0;
   }
 
   @Override
   public void unlockForCrunching() {
-    jdbcTemplate.update("update aggregate_meta_data set active=0");
+    cruncherJdbcTemplate.update("update aggregate_meta_data set active=0");
   }
 
   @Override
   public boolean lastLogonExists(String userId, String spEntityId) {
-    return jdbcTemplate.queryForInt("select count(*) from user_log_logins where usersphash = ?", aggregationRecordHash(userId, spEntityId)) == 1;
+    return cruncherJdbcTemplate.queryForInt("select count(*) from user_log_logins where usersphash = ?", aggregationRecordHash(userId, spEntityId)) == 1;
   }
 
   @Override
   public void insertLastLogin(LoginEntry le) {
     LOG.debug("Inserting new aggregated user record for last login on date {}, record: {}", new Object[] {le.getLoginDate(), le});
-    jdbcTemplate.update("insert into user_log_logins (loginstamp,userid,spentityid,spentityname,idpentityid,usersphash)" +
+    cruncherJdbcTemplate.update("insert into user_log_logins (loginstamp,userid,spentityid,spentityname,idpentityid,usersphash)" +
       " values (?, ?, ?, ?, ?, ?)",
       le.getLoginDate(), le.getUserId(), le.getSpEntityId(), le.getSpEntityName(), le.getIdpEntityId(), aggregationRecordHash(le.getUserId(), le.getSpEntityId()));
   }
 
   @Override
   public void updateLastLogin(String userId, String spEntityId, Date loginDate) {
-    jdbcTemplate.update("update user_log_logins set loginstamp = ? where usersphash = ?", loginDate, aggregationRecordHash(userId, spEntityId));
+    cruncherJdbcTemplate.update("update user_log_logins set loginstamp = ? where usersphash = ?", loginDate, aggregationRecordHash(userId, spEntityId));
   }
 
   private Map<String, Object> getParameterMap(LocalDate start, LocalDate end, String idpEntityId, String spEntityId) {

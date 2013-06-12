@@ -49,12 +49,22 @@ public class SpringConfiguration {
   Environment env;
 
   @Bean
-  public javax.sql.DataSource dataSource() {
+  public javax.sql.DataSource ebDataSource() {
     DataSource dataSource = new DataSource();
-    dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
-    dataSource.setUrl(env.getProperty("jdbc.url"));
-    dataSource.setUsername(env.getProperty("jdbc.username"));
-    dataSource.setPassword(env.getProperty("jdbc.password"));
+    dataSource.setDriverClassName(env.getProperty("eb.jdbc.driverClassName"));
+    dataSource.setUrl(env.getProperty("eb.jdbc.url"));
+    dataSource.setUsername(env.getProperty("eb.jdbc.username"));
+    dataSource.setPassword(env.getProperty("eb.jdbc.password"));
+    return dataSource;
+  }
+  
+  @Bean
+  public javax.sql.DataSource cruncherDataSource() {
+    DataSource dataSource = new DataSource();
+    dataSource.setDriverClassName(env.getProperty("cruncher.jdbc.driverClassName"));
+    dataSource.setUrl(env.getProperty("cruncher.jdbc.url"));
+    dataSource.setUsername(env.getProperty("cruncher.jdbc.username"));
+    dataSource.setPassword(env.getProperty("cruncher.jdbc.password"));
     return dataSource;
   }
   
@@ -75,7 +85,7 @@ public class SpringConfiguration {
   public Flyway flyway() {
     final Flyway flyway = new Flyway();
     flyway.setInitOnMigrate(true);
-    flyway.setDataSource(dataSource());
+    flyway.setDataSource(cruncherDataSource());
     String locationsValue = env.getProperty("flyway.migrations.location");
     String[] locations = locationsValue.split("\\s*,\\s*");
     flyway.setLocations(locations);
@@ -84,7 +94,12 @@ public class SpringConfiguration {
   }
 
   @Bean
-  public JdbcTemplate jdbcTemplate() {
-    return new JdbcTemplate(dataSource());
+  public JdbcTemplate ebJdbcTemplate() {
+    return new JdbcTemplate(ebDataSource());
+  }
+  
+  @Bean
+  public JdbcTemplate cruncherJdbcTemplate() {
+    return new JdbcTemplate(cruncherDataSource());
   }
 }

@@ -59,7 +59,7 @@ public class AggregatorTest {
   private Aggregator aggregator;
 
   @Inject
-  private JdbcTemplate jdbcTemplate;
+  private JdbcTemplate cruncherJdbcTemplate;
 
   private String sqlRowCountAggregated = "select count(*) from aggregated_log_logins";
 
@@ -75,13 +75,13 @@ public class AggregatorTest {
     instance.set(2012, 3, 21);
     String hash = aggregationRecordHash("idp2", "sp1", instance.getTime());
  
-    long entryCount = jdbcTemplate.queryForLong("select entrycount from aggregated_log_logins where datespidphash = ?", hash);
+    long entryCount = cruncherJdbcTemplate.queryForLong("select entrycount from aggregated_log_logins where datespidphash = ?", hash);
     assertEquals(2, entryCount);
-    long timestamp = jdbcTemplate.queryForLong("select aggregatepoint from aggregate_meta_data");
+    long timestamp = cruncherJdbcTemplate.queryForLong("select aggregatepoint from aggregate_meta_data");
     assertEquals(1335088121000L, timestamp);
     
     String userHash = aggregationRecordHash("user_1","sp1");
-    long lastlogin = jdbcTemplate.queryForObject("select loginstamp from user_log_logins where usersphash = '" + userHash+"'", new RowMapper<Long>() {
+    long lastlogin = cruncherJdbcTemplate.queryForObject("select loginstamp from user_log_logins where usersphash = '" + userHash+"'", new RowMapper<Long>() {
 
       @Override
       public Long mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -104,21 +104,21 @@ public class AggregatorTest {
 
   @Test
   public void aggregateList() {
-    int rowCountBefore = jdbcTemplate.queryForInt(sqlRowCountAggregated);
+    int rowCountBefore = cruncherJdbcTemplate.queryForInt(sqlRowCountAggregated);
     LoginEntry loginEntry = new LoginEntry("someIdp", "marker0", new Date(), "someSp", "", "");
     LoginEntry loginEntry2 = new LoginEntry("someIdp", "marker0", new Date(), "someSp", "", "");
 
     aggregator.aggregateLogin(Arrays.asList(loginEntry, loginEntry2));
 
-    int rowCountAfter = jdbcTemplate.queryForInt(sqlRowCountAggregated);
+    int rowCountAfter = cruncherJdbcTemplate.queryForInt(sqlRowCountAggregated);
     assertEquals("Aggregation of 2 records should result in 1 added rows", rowCountBefore + 1, rowCountAfter);
-    int aggregatedCount = jdbcTemplate.queryForInt("select entrycount from aggregated_log_logins where idpentityname like 'marker0'");
+    int aggregatedCount = cruncherJdbcTemplate.queryForInt("select entrycount from aggregated_log_logins where idpentityname like 'marker0'");
     assertEquals("Aggegrated records should count 2", 2, aggregatedCount);
   }
 
   @Test
   public void aggregateDifferentSpIdp() {
-    int rowCountBefore = jdbcTemplate.queryForInt(sqlRowCountAggregated);
+    int rowCountBefore = cruncherJdbcTemplate.queryForInt(sqlRowCountAggregated);
     LoginEntry loginEntry1 = new LoginEntry("someIdp1", "marker1", new Date(), "someSp1", "", "");
     LoginEntry loginEntry2 = new LoginEntry("someIdp2", "marker1", new Date(), "someSp1", "", "");
     LoginEntry loginEntry3 = new LoginEntry("someIdp1", "marker1", new Date(), "someSp2", "", "");
@@ -126,10 +126,10 @@ public class AggregatorTest {
 
     aggregator.aggregateLogin(Arrays.asList(loginEntry1, loginEntry2, loginEntry3, loginEntry4));
 
-    int rowCountAfter = jdbcTemplate.queryForInt(sqlRowCountAggregated);
+    int rowCountAfter = cruncherJdbcTemplate.queryForInt(sqlRowCountAggregated);
     assertEquals("Aggregation of 4 records of different sp/idps should result in 4 added rows", rowCountBefore + 4, rowCountAfter);
-    LOG.debug("Contents of aggregated_log_logins: {}", jdbcTemplate.queryForList("select * from aggregated_log_logins"));
-    List<Integer> aggregatedCount = jdbcTemplate.queryForList("select entrycount from aggregated_log_logins where idpentityname like 'marker1'", Integer.class);
+    LOG.debug("Contents of aggregated_log_logins: {}", cruncherJdbcTemplate.queryForList("select * from aggregated_log_logins"));
+    List<Integer> aggregatedCount = cruncherJdbcTemplate.queryForList("select entrycount from aggregated_log_logins where idpentityname like 'marker1'", Integer.class);
     assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(0));
     assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(1));
     assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(2));

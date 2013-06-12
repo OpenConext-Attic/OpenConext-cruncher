@@ -48,13 +48,17 @@ public class SpringConfigurationForTest {
   @Inject
   Environment env;
 
+  /*
+   * For test we only have one datasource. In this database we also populate
+   * some EB tables;
+   */
   @Bean
   public javax.sql.DataSource dataSource() {
     DataSource dataSource = new DataSource();
-    dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
-    dataSource.setUrl(env.getProperty("jdbc.url"));
-    dataSource.setUsername(env.getProperty("jdbc.username"));
-    dataSource.setPassword(env.getProperty("jdbc.password"));
+    dataSource.setDriverClassName(env.getProperty("eb.jdbc.driverClassName"));
+    dataSource.setUrl(env.getProperty("eb.jdbc.url"));
+    dataSource.setUsername(env.getProperty("eb.jdbc.username"));
+    dataSource.setPassword(env.getProperty("eb.jdbc.password"));
     return dataSource;
   }
 
@@ -71,7 +75,12 @@ public class SpringConfigurationForTest {
   }
 
   @Bean
-  public JdbcTemplate jdbcTemplate() {
+  public JdbcTemplate ebJdbcTemplate() {
+    return new JdbcTemplate(dataSource());
+  }
+  
+  @Bean
+  public JdbcTemplate cruncherJdbcTemplate() {
     return new JdbcTemplate(dataSource());
   }
   
