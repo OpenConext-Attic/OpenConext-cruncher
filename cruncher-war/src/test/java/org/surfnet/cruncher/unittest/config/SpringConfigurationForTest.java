@@ -18,24 +18,19 @@
  */
 package org.surfnet.cruncher.unittest.config;
 
-import javax.inject.Inject;
-
+import com.googlecode.flyway.core.Flyway;
 import org.apache.tomcat.jdbc.pool.DataSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.googlecode.flyway.core.Flyway;
+import javax.inject.Inject;
 
 @Configuration
-@PropertySource("classpath:cruncher.properties")
+@PropertySource({"classpath:application.properties","classpath:cruncher.properties"})
 @ImportResource("classpath:property-placeholder.xml")
 /*
  * The component scan can be used to add packages and exclusions to the default

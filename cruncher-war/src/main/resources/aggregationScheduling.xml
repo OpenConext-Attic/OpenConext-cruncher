@@ -21,7 +21,7 @@
        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-  <context:property-placeholder location="classpath:cruncher.properties" />
+  <context:property-placeholder location="classpath:application.properties,classpath:cruncher.properties" />
 
   <task:scheduler id="scheduler" pool-size="1"/>
   <task:scheduled-tasks scheduler="scheduler">

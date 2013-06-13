@@ -18,25 +18,22 @@
  */
 package org.surfnet.cruncher.config;
 
-import javax.inject.Inject;
-import javax.servlet.Filter;
-
+import com.googlecode.flyway.core.Flyway;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.jdbc.pool.DataSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.surfnet.oaaas.auth.AuthorizationServerFilter;
 
-import com.googlecode.flyway.core.Flyway;
+import javax.inject.Inject;
+import javax.servlet.Filter;
 
 @EnableScheduling
 @Configuration
-@PropertySource("classpath:cruncher.properties")
+@PropertySource({"classpath:application.properties","classpath:cruncher.properties"})
 @ImportResource("classpath:aggregationScheduling.xml")
 /*
  * The component scan can be used to add packages and exclusions to the default
@@ -46,7 +43,10 @@ import com.googlecode.flyway.core.Flyway;
 public class SpringConfiguration {
 
   @Inject
-  Environment env;
+  private Environment env;
+
+  @Inject
+  private ApplicationContext applicationContext;
 
   @Bean
   public javax.sql.DataSource ebDataSource() {
@@ -73,7 +73,13 @@ public class SpringConfiguration {
     String className = env.getProperty("authorizationServerFilterClass");
     if (StringUtils.isNotBlank(className)) {
       try {
-        return (Filter) getClass().getClassLoader().loadClass(className).newInstance();
+        AuthorizationServerFilter authorizationServerFilter = (AuthorizationServerFilter) getClass().getClassLoader().loadClass(className).newInstance();
+        authorizationServerFilter.setAuthorizationServerUrl(env.getProperty("authorizationServer.url"));
+        authorizationServerFilter.setResourceServerKey(env.getProperty("authorizationServer.key"));
+        authorizationServerFilter.setResourceServerSecret(env.getProperty("authorizationServer.secret"));
+        authorizationServerFilter.setAllowCorsRequests(Boolean.valueOf(env.getProperty("authorizationServer.allowCorsRequests")));
+        authorizationServerFilter.setCacheEnabled(Boolean.valueOf(env.getProperty("authorizationServer.cacheEnabled")));
+        return authorizationServerFilter;
       } catch (Exception e) {
         throw new RuntimeException(e);
       }      

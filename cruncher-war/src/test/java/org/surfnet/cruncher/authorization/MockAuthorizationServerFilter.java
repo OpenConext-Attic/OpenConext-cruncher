@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class MockAuthorizationServerFilter implements Filter {
+public class MockAuthorizationServerFilter extends AuthorizationServerFilter {
 
   @Override
   public void init(FilterConfig filterConfig) throws ServletException {

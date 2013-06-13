@@ -15,18 +15,14 @@
 #
 
 # The engineblock database settings
-eb.jdbc.driverClassName=com.mysql.jdbc.Driver
 eb.jdbc.url=jdbc:mysql://localhost:3306/eb
 eb.jdbc.username=ebrw
 eb.jdbc.password=??
 
 # cruncher database settings
-cruncher.jdbc.driverClassName=com.mysql.jdbc.Driver
 cruncher.jdbc.url=jdbc:mysql://localhost:3306/cruncher
 cruncher.jdbc.username=cruncher
 cruncher.jdbc.password=??
-
-flyway.migrations.location=db/migration/mysql
 
 aggregation.interval=300000
 aggregation.batch-size=1000
@@ -37,5 +33,3 @@ adminService.resourceServerKey=??
 adminService.resourceServerSecret=??
 adminService.cacheEnabled=false
 adminService.allowCorsRequests=true
-
-authorizationServerFilterClass=org.surfnet.oaaas.auth.AuthorizationServerFilter
