@@ -14,14 +14,21 @@
 # limitations under the License.
 #
 
-# The database settings
-jdbc.driverClassName=com.mysql.jdbc.Driver
-jdbc.url=jdbc:mysql://localhost:3306/engineblock
-jdbc.username=??
-jdbc.password=??
+# The engineblock database settings
+eb.jdbc.driverClassName=com.mysql.jdbc.Driver
+eb.jdbc.url=jdbc:mysql://localhost:3306/eb
+eb.jdbc.username=ebrw
+eb.jdbc.password=??
+
+# cruncher database settings
+cruncher.jdbc.driverClassName=com.mysql.jdbc.Driver
+cruncher.jdbc.url=jdbc:mysql://localhost:3306/cruncher
+cruncher.jdbc.username=cruncher
+cruncher.jdbc.password=??
+
 flyway.migrations.location=db/migration/mysql
 
-aggregation.interval=10000
+aggregation.interval=300000
 aggregation.batch-size=1000
 
 # Info for communication with the APIS Authorization Server
