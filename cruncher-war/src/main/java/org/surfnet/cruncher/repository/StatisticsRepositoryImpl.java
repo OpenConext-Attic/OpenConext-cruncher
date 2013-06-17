@@ -76,29 +76,29 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     
     namedJdbcTemplate.query(query, parameterMap , new RowMapper<Object>() {
       Map<LocalDate, Integer> queryResult = new HashMap<LocalDate, Integer>();
-      String currentAggregateSp = null;
-      String currentAggregateIdp = null;
+      LoginData currentAggregate = null;
       
       @Override
       public Object mapRow(ResultSet rs, int row) throws SQLException {
-        String spEntityId = rs.getString("spentityid");
-        String idpEntityId = rs.getString("idpentityid");
+        LoginData currentRow = getLoginDataFromRow(rs);
+        
         /*
          * aggregate if sp/idp entityid differs from previous record
          * do not aggregate if on first record
          * if on last record, aggregate last entries
          */
-        if ((!spEntityId.equals(currentAggregateSp) || !idpEntityId.equals(currentAggregateIdp)) && !rs.isFirst()) {
-          result.add(aggregateCurrentEntry(rs, start, end, currentAggregateIdp, currentAggregateSp));
+        if (!currentRow.equals(currentAggregate) && !rs.isFirst()) {
+          //record is different, aggregate previous one and start fresh
+          result.add(aggregateCurrentEntry(currentAggregate, start, end));
           queryResult = new HashMap<LocalDate, Integer>();
-        } 
-        currentAggregateIdp = idpEntityId;
-        currentAggregateSp = spEntityId;
+          
+        }
         queryResult.put(new LocalDate(rs.getDate("entryday")), rs.getInt("entrycount"));
+        currentAggregate = currentRow;
         
        if (rs.isLast()) {
          // aggregate last set
-         result.add(aggregateCurrentEntry(rs, start, end, currentAggregateIdp, currentAggregateSp));
+         result.add(aggregateCurrentEntry(currentAggregate, start, end));
        }
 
        /*
@@ -108,14 +108,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
        return null;
      }
 
-     private LoginData aggregateCurrentEntry(final ResultSet rs, final LocalDate start, final LocalDate end, final String idpEntityId, final String spEntityId) throws SQLException {
-       //aggregate
-       LoginData loginData = new LoginData();
-       loginData.setIdpEntityId(idpEntityId);
-       loginData.setSpEntityId(spEntityId);
-       loginData.setIdpname(rs.getString("idpentityname"));
-       loginData.setSpName(rs.getString("spentityname"));
-       
+     private LoginData aggregateCurrentEntry(final LoginData loginData, final LocalDate start, final LocalDate end) {
        LocalDate current = start;
         
        int total = 0;
@@ -133,6 +126,16 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
        loginData.setPointEnd(end.toDate().getTime());
        loginData.setPointInterval(POINT_INTERVAL);
        return loginData;
+     }
+     
+     private LoginData getLoginDataFromRow(ResultSet rs) throws SQLException {
+       LoginData result = new LoginData();
+       result.setIdpEntityId(rs.getString("idpentityid"));
+       result.setIdpname(rs.getString("idpentityname"));
+       result.setSpEntityId(rs.getString("spentityid"));
+       result.setSpName(rs.getString("spentityname"));
+       
+       return result;
      }
     });
     return result;

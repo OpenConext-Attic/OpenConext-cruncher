@@ -89,6 +89,10 @@ public class CruncherResourceTest {
   }
 
   private void checkSp1Entry(LoginData data) {
+    assertEquals("idp1", data.getIdpEntityId());
+    assertEquals("idp1_name",data.getIdpname());
+    assertEquals("sp1",data.getSpEntityId());
+    assertEquals("sp1_name",data.getSpName());
     assertEquals(240, data.getTotal());
     assertEquals(12, data.getData().size());
     assertEquals(20, (int) data.getData().get(0));

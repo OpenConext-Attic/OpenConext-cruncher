@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LoginData {
-
   private String spName;
   private String idpname;
   private String spEntityId;
@@ -102,5 +101,15 @@ public class LoginData {
 
   public void setPointInterval(long pointInterval) {
     this.pointInterval = pointInterval;
-  } 
+  }
+  
+  @Override
+  public boolean equals(Object obj) {
+    boolean result = false;
+    if (null != obj && obj instanceof LoginData) {
+      LoginData rhs = (LoginData) obj;
+      result = idpEntityId.equals(rhs.idpEntityId) && spEntityId.equals(rhs.spEntityId);
+    }
+    return result;
+  }
 }
