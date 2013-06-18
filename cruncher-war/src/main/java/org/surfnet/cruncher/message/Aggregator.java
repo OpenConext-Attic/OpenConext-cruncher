@@ -19,6 +19,7 @@ package org.surfnet.cruncher.message;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -106,6 +107,17 @@ public class Aggregator {
     }
   }
 
+  @PreDestroy
+  public void shutdownAggregator() {
+    while (!statisticsRepository.lockForCrunching()) {
+      LOG.info("delaying shutdown, cruncher is still running");
+      try {
+        Thread.sleep(500);
+      } catch (InterruptedException e) {}
+    }
+    statisticsRepository.unlockForCrunching();
+  }
+  
   private boolean entryForUserExists(LoginEntry le) {
     return statisticsRepository.lastLogonExists(le.getUserId(), le.getSpEntityId());
   }
