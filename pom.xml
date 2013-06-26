@@ -31,9 +31,9 @@
   <packaging>pom</packaging>
 
   <scm>
-    <connection>scm:git:git@github.com:OpenConext/cruncher.git</connection>
-    <url>scm:git:git@github.com:OpenConext/cruncher.git</url>
-    <developerConnection>scm:git:git@github.com:OpenConext/cruncher.git</developerConnection>
+    <connection>scm:git:git@github.com:OpenConext/OpenConext-cruncher.git</connection>
+    <url>scm:git:git@github.com:OpenConext/OpenConext-cruncher.git</url>
+    <developerConnection>scm:git:git@github.com:OpenConext/OpenConext-cruncher.git</developerConnection>
   </scm>
 
   <repositories>
