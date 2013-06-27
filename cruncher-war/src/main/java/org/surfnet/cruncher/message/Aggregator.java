@@ -62,7 +62,7 @@ public class Aggregator {
    * crunching is disabled until the original error is recovered
    */
   public void run() {
-    LOG.debug("Running aggregation task, batch size {}", batchSize);
+    LOG.info("Running aggregation task, batch size {}", batchSize);
     if (statisticsRepository.lockForCrunching()) {
       List<LoginEntry> entries = statisticsRepository.getUnprocessedLoginEntries(batchSize);
       LOG.debug("Got {} unprocessed login entries", entries.size());
@@ -110,7 +110,7 @@ public class Aggregator {
   @PreDestroy
   public void shutdownAggregator() {
     while (!statisticsRepository.lockForCrunching()) {
-      LOG.info("delaying shutdown, cruncher is still running");
+      LOG.warn("delaying shutdown, cruncher is still running");
       try {
         Thread.sleep(500);
       } catch (InterruptedException e) {}
