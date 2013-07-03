@@ -57,12 +57,19 @@ public class Aggregator {
   @Value("${aggregation.batch-size}")
   private int batchSize;
 
+  @Value("${aggregation.enabled}")
+  private boolean enabled;
+
   /*
    * When a (runtime) exception occurs, the active bit is *not* set to 0, this means
    * crunching is disabled until the original error is recovered
    */
   public void run() {
     LOG.info("Running aggregation task, batch size {}", batchSize);
+    if (!enabled) {
+      LOG.info("Not running aggregation task, because aggregation.enabled=false");
+      return;
+    }
     if (statisticsRepository.lockForCrunching()) {
       List<LoginEntry> entries = statisticsRepository.getUnprocessedLoginEntries(batchSize);
       LOG.debug("Got {} unprocessed login entries", entries.size());

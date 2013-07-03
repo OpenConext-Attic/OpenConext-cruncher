@@ -26,6 +26,7 @@ cruncher.jdbc.password=??
 
 aggregation.interval=300000
 aggregation.batch-size=1000
+aggregation.enabled=true
 
 # Info for communication with the APIS Authorization Server
 adminService.tokenVerificationUrl=??

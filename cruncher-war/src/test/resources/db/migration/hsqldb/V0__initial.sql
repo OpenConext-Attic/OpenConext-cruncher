@@ -122,3 +122,11 @@ INSERT INTO aggregated_log_logins (entryday, spentityid, spentityname, idpentity
   VALUES('2013-01-11', 'sp1', 'sp1_name','idp2','idp2_name', 20, 23);
 INSERT INTO aggregated_log_logins (entryday, spentityid, spentityname, idpentityid, idpentityname, entrycount, datespidphash)
   VALUES('2013-01-12', 'sp1', 'sp1_name','idp2','idp2_name', 20, 24);
+
+-- This is dirty as we insert rows with the same date, sp and idp (which in real life should not happen)
+INSERT INTO aggregated_log_logins (entryday, spentityid, spentityname, idpentityid, idpentityname, entrycount, datespidphash)
+  VALUES('2013-01-12', 'sp1', 'sp1_name','idp2','idp2_name', 10, 25);
+INSERT INTO aggregated_log_logins (entryday, spentityid, spentityname, idpentityid, idpentityname, entrycount, datespidphash)
+  VALUES('2013-01-12', 'sp1', 'sp1_name','idp2','idp2_name', 15, 26);
+INSERT INTO aggregated_log_logins (entryday, spentityid, spentityname, idpentityid, idpentityname, entrycount, datespidphash)
+  VALUES('2014-01-12', 'sp1', 'sp1_name','idp2','idp2_name', 10, 27);

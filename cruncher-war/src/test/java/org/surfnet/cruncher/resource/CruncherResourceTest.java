@@ -16,18 +16,7 @@
 
 package org.surfnet.cruncher.resource;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
-
+import junit.framework.Assert;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,24 +30,37 @@ import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.SpStatistic;
 import org.surfnet.cruncher.unittest.config.SpringConfigurationForTest;
 
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.*;
+
 @SuppressWarnings("unchecked")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringConfigurationForTest.class)
 @Transactional
-@TransactionConfiguration(defaultRollback=true)
+@TransactionConfiguration(defaultRollback = true)
 public class CruncherResourceTest {
 
   @Inject
   private CruncherResource cruncherResource;
-  
+
   @Inject
   private Aggregator aggregator;
 
   @Inject
   private JdbcTemplate cruncherJdbcTemplate;
-  
+
   private HttpServletRequest request = null; //currently never really used
-  
+
   @Test
   public void getLogins() {
     LocalDate start = new LocalDate(2013, 1, 1);
@@ -90,9 +92,9 @@ public class CruncherResourceTest {
 
   private void checkSp1Entry(LoginData data) {
     assertEquals("idp1", data.getIdpEntityId());
-    assertEquals("idp1_name",data.getIdpname());
-    assertEquals("sp1",data.getSpEntityId());
-    assertEquals("sp1_name",data.getSpName());
+    assertEquals("idp1_name", data.getIdpname());
+    assertEquals("sp1", data.getSpEntityId());
+    assertEquals("sp1_name", data.getSpName());
     assertEquals(240, data.getTotal());
     assertEquals(12, data.getData().size());
     assertEquals(20, (int) data.getData().get(0));
@@ -106,7 +108,7 @@ public class CruncherResourceTest {
     try {
       cruncherResource.getLoginsPerInterval(request, null, null, null, null).getEntity();
       fail("illegal start and end date may not be null");
-    } catch(IllegalArgumentException e) {
+    } catch (IllegalArgumentException e) {
       //expected
     }
   }
@@ -117,17 +119,17 @@ public class CruncherResourceTest {
     LocalDate end = new LocalDate(2013, 1, 20);
     Response response = cruncherResource.getLoginsPerInterval(request, start.toDate().getTime(), end.toDate().getTime(), "idp1", "sp1");
     List<LoginData> result = (List<LoginData>) response.getEntity();
-    
+
     assertNotNull(result);
     assertEquals(1, result.size());
     LoginData loginData = result.get(0);
     assertEquals(11, loginData.getData().size());
-    assertEquals(20, (int)loginData.getData().get(2));
-    assertEquals(0, (int)loginData.getData().get(3));
-    assertEquals(0, (int)loginData.getData().get(4));
-    assertEquals(0, (int)loginData.getData().get(10));
+    assertEquals(20, (int) loginData.getData().get(2));
+    assertEquals(0, (int) loginData.getData().get(3));
+    assertEquals(0, (int) loginData.getData().get(4));
+    assertEquals(0, (int) loginData.getData().get(10));
   }
-  
+
   @Test
   public void getActiveServices() {
     aggregator.run();
@@ -143,6 +145,57 @@ public class CruncherResourceTest {
     }
   }
 
+  @Test
+  public void testDifferentResultsForSameSpWhenRetrievedWithExplcitSpParameterAndNot() throws IOException {
+    LocalDate start = new LocalDate(1999, 1, 10);
+    LocalDate end = new LocalDate(2999, 1, 20);
+
+    Response response = cruncherResource.getLoginsPerInterval(request, start.toDate().getTime(),
+            end.toDate().getTime(), null, null);
+
+    List<LoginData> loginData = (List<LoginData>) response.getEntity();
+
+    Set<String> idps = uniqueIdps(loginData);
+    for (String idp : idps) {
+      List<LoginData> sPsPerIdp = sPsPerIdp(idp, loginData);
+      for (LoginData data : sPsPerIdp) {
+        assertLoginStats(data, idp, start, end);
+      }
+    }
+  }
+
+  private List<LoginData> sPsPerIdp(String iDP, List<LoginData> loginData) {
+    List<LoginData> result = new ArrayList<LoginData>();
+    for (LoginData data : loginData) {
+      if (data.getIdpEntityId().equals(iDP)) {
+        result.add(data);
+      }
+    }
+    return result;
+  }
+
+  private Set<String> uniqueIdps(List<LoginData> loginData) {
+    Set<String> idps = new HashSet<String>();
+    for (LoginData data : loginData) {
+      idps.add(data.getIdpEntityId());
+    }
+    return idps;
+  }
+
+  private void assertLoginStats(LoginData loginData, String idp, LocalDate start, LocalDate end) throws IOException {
+    String spId = loginData.getSpEntityId();
+
+    Response response = cruncherResource.getLoginsPerInterval(request, start.toDate().getTime(),
+            end.toDate().getTime(), idp, spId);
+
+    List<LoginData> result = (List<LoginData>) response.getEntity();
+    Assert.assertEquals(1, result.size());
+    LoginData oneSp = result.get(0);
+
+    assertEquals(oneSp.getData().size(), loginData.getData().size());
+    assertEquals(oneSp.getTotal(), loginData.getTotal());
+  }
+
   private void checkStatistics(SpStatistic spStatistic) {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     java.util.Date entryDate = null;
@@ -153,4 +206,6 @@ public class CruncherResourceTest {
     }
     assertEquals(entryDate.getTime(), spStatistic.getEntryTime());
   }
+
+
 }

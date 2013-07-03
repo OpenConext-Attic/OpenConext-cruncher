@@ -70,13 +70,13 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
         "entryday <= :endDate AND " +
         "(:spEntityId IS NULL OR spentityid = :spEntityId) AND " +
         "(:idpEntityId IS NULL OR idpentityid = :idpEntityId) " +
-        "order by idpentityid, spentityid ";
+        "order by idpentityid, spentityid, entryday ";
 
     Map<String, Object> parameterMap = getParameterMap(start, end, idpEntityId, spEntityId);
     
     namedJdbcTemplate.query(query, parameterMap , new RowMapper<Object>() {
-      Map<LocalDate, Integer> queryResult = new HashMap<LocalDate, Integer>();
-      LoginData currentAggregate = null;
+      private Map<LocalDate, Integer> queryResult = new HashMap<LocalDate, Integer>();
+      private LoginData currentAggregate = null;
       
       @Override
       public Object mapRow(ResultSet rs, int row) throws SQLException {
@@ -113,11 +113,12 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
         
        int total = 0;
        while (current.isBefore(end.plusDays(1))) {
-         if (null == queryResult.get(current)) {
+         Integer count = queryResult.get(current);
+         if (count == null) {
            loginData.getData().add(0);
          } else {
-           loginData.getData().add(queryResult.get(current));
-           total += queryResult.get(current);
+           loginData.getData().add(count);
+           total += count;
          }
          current = current.plusDays(1);
        }
@@ -134,7 +135,6 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
        result.setIdpname(rs.getString("idpentityname"));
        result.setSpEntityId(rs.getString("spentityid"));
        result.setSpName(rs.getString("spentityname"));
-       
        return result;
      }
     });

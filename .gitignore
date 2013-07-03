@@ -4,3 +4,4 @@ target
 .project
 .settings
 *.iml
+CruncherClientTestRemote.java
