@@ -15,13 +15,13 @@
 #
 
 # The engineblock database settings
-eb.jdbc.url=jdbc:mysql://localhost:3306/eb
+eb.jdbc.url=jdbc\:mysql\://db.dev.surfconext.nl\:3306/eb
 eb.jdbc.username=ebrw
 eb.jdbc.password=??
 
 # cruncher database settings
-cruncher.jdbc.url=jdbc:mysql://localhost:3306/cruncher
-cruncher.jdbc.username=cruncher
+cruncher.jdbc.url=jdbc\:mysql\://db.dev.surfconext.nl\:3306/cruncher
+cruncher.jdbc.username=cruncherrw
 cruncher.jdbc.password=??
 
 # Info for communication with the APIS Authorization Server
