@@ -79,14 +79,10 @@
       <groupId>nl.surfnet.apis</groupId>
       <artifactId>apis-resource-server-library</artifactId>
     </dependency>
-    <dependency>
-      <groupId>nl.surfnet.apis</groupId>
-      <artifactId>apis-surfconext-authn</artifactId>
-    </dependency>
+
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <scope>provided</scope>
+      <artifactId>servlet-api</artifactId>
     </dependency>
     <dependency>
       <groupId>com.sun.jersey</groupId>

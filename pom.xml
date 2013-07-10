@@ -75,7 +75,6 @@
     <tomcat-jdbc.version>7.0.29</tomcat-jdbc.version>
     <commons-io.version>2.0.1</commons-io.version>
     <jersey.version>1.17</jersey.version>
-    <servlet-api.version>3.0.1</servlet-api.version>
     <javax-inject.version>1</javax-inject.version>
     <mockito.version>1.9.0</mockito.version>
     <jackson.version>1.9.2</jackson.version>
@@ -91,17 +90,6 @@
       <groupId>nl.surfnet.apis</groupId>
       <artifactId>apis-resource-server-library</artifactId>
       <version>${apis.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>nl.surfnet.apis</groupId>
-      <artifactId>apis-surfconext-authn</artifactId>
-      <version>${apis.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>${servlet-api.version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.jersey</groupId>
@@ -179,7 +167,7 @@
     <dependency>
       <groupId>org.surfnet.coin</groupId>
       <artifactId>csa-client</artifactId>
-      <version>3.6.0</version>
+      <version>3.6.3-SNAPSHOT</version>
     </dependency>
   </dependencies>
   </dependencyManagement>

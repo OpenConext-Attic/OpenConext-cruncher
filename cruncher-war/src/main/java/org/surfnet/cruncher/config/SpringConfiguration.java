@@ -79,6 +79,7 @@ public class SpringConfiguration {
         authorizationServerFilter.setResourceServerSecret(env.getProperty("authorizationServer.secret"));
         authorizationServerFilter.setAllowCorsRequests(Boolean.valueOf(env.getProperty("authorizationServer.allowCorsRequests")));
         authorizationServerFilter.setCacheEnabled(Boolean.valueOf(env.getProperty("authorizationServer.cacheEnabled")));
+        authorizationServerFilter.setTypeInformationIsIncluded(Boolean.valueOf((env.getProperty("authorizationServer.typeInformationIsIncluded"))));
         return authorizationServerFilter;
       } catch (Exception e) {
         throw new RuntimeException(e);

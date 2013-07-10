@@ -20,7 +20,6 @@ package org.surfnet.cruncher.authorization;
 
 import org.surfnet.oaaas.auth.AuthorizationServerFilter;
 import org.surfnet.oaaas.auth.principal.AuthenticatedPrincipal;
-import org.surfnet.oaaas.conext.SAMLAuthenticatedPrincipal;
 import org.surfnet.oaaas.model.VerifyTokenResponse;
 
 import javax.servlet.*;
@@ -40,10 +39,13 @@ public class MockAuthorizationServerFilter extends AuthorizationServerFilter {
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-    AuthenticatedPrincipal principal = new SAMLAuthenticatedPrincipal("john.doe", Arrays.asList(new String[]{"user"}), new HashMap<String, String>(), Arrays.asList(new String[]{"showroom_shopmanager"}), "https://mujina-idp.acc.showroom.surfconext.nl/", "John Doe", true);
-    VerifyTokenResponse tokenResponse = new VerifyTokenResponse("client-name-mocked", Arrays.asList(new String[]{"read"}), principal, null);
+    AuthenticatedPrincipal principal = new AuthenticatedPrincipal("john.doe", Arrays.asList("user"), new HashMap<String, String>(), Arrays.asList("showroom_shopmanager"), true);
+    principal.addAttribute("IDENTITY_PROVIDER", "https://mujina-idp.acc.showroom.surfconext.nl/");
+    principal.addAttribute("DISPLAY_NAME", "John Doe");
+    VerifyTokenResponse tokenResponse = new VerifyTokenResponse("client-name-mocked", Arrays.asList("read"), principal, null);
     request.setAttribute(AuthorizationServerFilter.VERIFY_TOKEN_RESPONSE, tokenResponse);
     chain.doFilter(request, response);
+    principal.getAttributes().get("IDP_ENTITY_ID");
   }
 
 }
