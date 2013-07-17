@@ -13,10 +13,5 @@
 Cruncher
 ======
 
-Cruncher reads from a Redis queue on notification of an published new-login event and populates the aggregated login tables.
+See https://wiki.surfnetlabs.nl/display/conextdocumentation/Cruncher-API
 
-Features
---------
-- Todo:
-  * ....
-  * ....
