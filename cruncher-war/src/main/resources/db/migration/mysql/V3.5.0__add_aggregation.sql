@@ -32,4 +32,4 @@ CREATE TABLE aggregate_meta_data (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO aggregate_meta_data (aggregatepoint)
-  VALUES (0);
+  VALUES (unix_timestamp(now() - interval 6 month));
