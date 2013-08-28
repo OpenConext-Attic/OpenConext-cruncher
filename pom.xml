@@ -81,7 +81,7 @@
     <jetty-maven-plugin.version>8.1.4.v20120524</jetty-maven-plugin.version>
     <cglib.version>2.2.2</cglib.version>
     <coin-master.test-dependencies.version>3.5.0</coin-master.test-dependencies.version>
-    <coin-shared.version>3.5.0</coin-shared.version>
+    <coin-shared.version>3.5.1-SNAPSHOT</coin-shared.version>
     <csa.version>3.6.3</csa.version>
   </properties>
 
@@ -169,6 +169,11 @@
       <groupId>org.surfnet.coin</groupId>
       <artifactId>csa-client</artifactId>
       <version>${csa.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.surfnet.coin</groupId>
+      <artifactId>coin-shared</artifactId>
+      <version>${coin-shared.version}</version>
     </dependency>
   </dependencies>
   </dependencyManagement>
