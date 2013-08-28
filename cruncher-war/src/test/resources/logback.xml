@@ -23,10 +23,10 @@
   
   <logger name="com.googlecode.flyway.core" level="debug" />
 
-  <logger name="org.surfnet" level="debug" />
-  <logger name="nl.surfnet" level="debug" />
+  <logger name="org.surfnet" level="trace" />
+  <logger name="nl.surfnet" level="trace" />
 
-  <root level="info">
+  <root level="debug">
     <appender-ref ref="console"/>
   </root>
 </configuration>

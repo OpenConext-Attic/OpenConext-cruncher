@@ -29,6 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.surfnet.cruncher.model.LoginEntry;
 import org.surfnet.cruncher.repository.StatisticsRepository;
 
@@ -53,6 +56,9 @@ public class Aggregator {
 
   @Inject
   private StatisticsRepository statisticsRepository;
+  
+  @Inject
+  private TransactionTemplate transactionTemplate;
 
   @Value("${aggregation.batch-size}")
   private int batchSize;
@@ -74,9 +80,6 @@ public class Aggregator {
       List<LoginEntry> entries = statisticsRepository.getUnprocessedLoginEntries(batchSize);
       LOG.debug("Got {} unprocessed login entries", entries.size());
       aggregateLogin(entries);
-      if (entries.size() > 0) {
-        statisticsRepository.setLoginEntriesProcessed(entries);
-      }
       statisticsRepository.unlockForCrunching();
     } else {
       LOG.debug("Someone else is crunching, not doing anything");
@@ -88,29 +91,56 @@ public class Aggregator {
    * This will
    * @param loginEntries
    */
-  public void aggregateLogin(List<LoginEntry> loginEntries) {
+  public void aggregateLogin(final List<LoginEntry> loginEntries) {
     if (loginEntries == null) {
       throw new IllegalArgumentException("List of loginEntries cannot be null.");
     }
-
-    for (LoginEntry le : loginEntries) {
-      //aggregate the login
-      if (entryForDayExists(le)) {
-        LOG.trace("Updating existing aggregated record for date {}, record: {}", le.getLoginDate(), le);
-        statisticsRepository.updateAggregated(le.getIdpEntityId(), le.getSpEntityId(), le.getLoginDate());
-      } else {
-        LOG.trace("Inserting aggregated record for date {}, record: {}", le.getLoginDate(), le);
-        statisticsRepository.insertAggregated(le);
+    
+    AggregateCounts counts = transactionTemplate.execute(new TransactionCallback<AggregateCounts>() {
+      @Override
+      public AggregateCounts doInTransaction(TransactionStatus status) {
+        AggregateCounts result = new AggregateCounts();
+        
+        for (LoginEntry le : loginEntries) {
+          result.total += 1;
+          //aggregate the login
+          if (entryForDayExists(le)) {
+            LOG.trace("Updating existing aggregated record for date {}, record: {}", le.getLoginDate(), le);
+            statisticsRepository.updateAggregated(le.getIdpEntityId(), le.getSpEntityId(), le.getLoginDate());
+            result.aggregated_update += 1;
+          } else {
+            LOG.trace("Inserting aggregated record for date {}, record: {}", le.getLoginDate(), le);
+            statisticsRepository.insertAggregated(le);
+            result.aggregated_insert += 1;
+          }
+          
+          //aggregate for the user
+          if (entryForUserExists(le)) {
+            LOG.trace("Updating existing aggregated record for date {}, record: {}", le.getLoginDate(), le);
+            statisticsRepository.updateLastLogin(le.getUserId(), le.getSpEntityId(), le.getLoginDate());
+            result.user_update += 1;
+          } else {
+            LOG.trace("Inserting aggregated record for date {}, record: {}", le.getLoginDate(), le);
+            statisticsRepository.insertLastLogin(le);
+            result.user_insert += 1;
+          }
+        }
+        
+        if (loginEntries.size() > 0) {
+          statisticsRepository.setLoginEntriesProcessed(loginEntries);
+        }
+        
+        return result;
       }
-      
-      //aggregate for the user
-      if (entryForUserExists(le)) {
-        LOG.trace("Updating existing aggregated record for date {}, record: {}", le.getLoginDate(), le);
-        statisticsRepository.updateLastLogin(le.getUserId(), le.getSpEntityId(), le.getLoginDate());
-      } else {
-        LOG.trace("Inserting aggregated record for date {}, record: {}", le.getLoginDate(), le);
-        statisticsRepository.insertLastLogin(le);
-      }
+    });
+    
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Results of this aggregate run:");
+      LOG.debug("total number of records handled: " + counts.total);
+      LOG.debug("number of new aggregation records inserted: " + counts.aggregated_insert);
+      LOG.debug("number of aggregation records updated: " + counts.aggregated_update);
+      LOG.debug("number of new user records inserted: " + counts.user_insert);
+      LOG.debug("number of user records updated: " + counts.user_update);
     }
   }
 
@@ -136,5 +166,12 @@ public class Aggregator {
   private boolean entryForDayExists(LoginEntry le) {
     return statisticsRepository.aggregatedExists(le.getIdpEntityId(), le.getSpEntityId(), le.getLoginDate());
   }
-
+  
+  private class AggregateCounts {
+    public int total = 0;
+    public int aggregated_insert = 0;
+    public int aggregated_update = 0;
+    public int user_insert = 0;
+    public int user_update = 0;
+  }
 }

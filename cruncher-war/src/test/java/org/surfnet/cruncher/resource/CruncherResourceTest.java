@@ -133,7 +133,7 @@ public class CruncherResourceTest {
   @Test
   public void getActiveServices() {
     aggregator.run();
-    Response response = cruncherResource.getRecentLoginsForUser(request, "user_1", "idp2");
+    Response response = cruncherResource.getRecentLoginsForUser(request, "idp2:user_1", "idp2");
     List<SpStatistic> result = (List<SpStatistic>) response.getEntity();
     assertNotNull(result);
     assertEquals(2, result.size());
@@ -200,7 +200,7 @@ public class CruncherResourceTest {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     java.util.Date entryDate = null;
     try {
-      entryDate = sdf.parse("2012-04-19 11:48:41");
+      entryDate = sdf.parse("2012-03-19 11:48:42");
     } catch (ParseException e) {
       e.printStackTrace();
     }

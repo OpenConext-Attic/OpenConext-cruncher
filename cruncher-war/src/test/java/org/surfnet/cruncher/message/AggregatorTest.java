@@ -78,9 +78,9 @@ public class AggregatorTest {
     long entryCount = cruncherJdbcTemplate.queryForLong("select entrycount from aggregated_log_logins where datespidphash = ?", hash);
     assertEquals(2, entryCount);
     long timestamp = cruncherJdbcTemplate.queryForLong("select aggregatepoint from aggregate_meta_data");
-    assertEquals(1335088121000L, timestamp);
+    assertEquals(20009L, timestamp);
     
-    String userHash = aggregationRecordHash("user_1","sp1");
+    String userHash = aggregationRecordHash("idp2:user_1","sp1");
     long lastlogin = cruncherJdbcTemplate.queryForObject("select loginstamp from user_log_logins where usersphash = '" + userHash+"'", new RowMapper<Long>() {
 
       @Override
@@ -91,9 +91,9 @@ public class AggregatorTest {
     });
     instance.setTimeInMillis(lastlogin);
     
-    //2012-04-20 11:48:41
+    //2012-02-20 11:48:42
     assertEquals(20, instance.get(DAY_OF_MONTH));
-    assertEquals(3, instance.get(MONDAY));
+    assertEquals(1, instance.get(MONDAY));
     assertEquals(2012, instance.get(YEAR));
   }
 
@@ -105,8 +105,8 @@ public class AggregatorTest {
   @Test
   public void aggregateList() {
     int rowCountBefore = cruncherJdbcTemplate.queryForInt(sqlRowCountAggregated);
-    LoginEntry loginEntry = new LoginEntry("someIdp", "marker0", new Date(), "someSp", "", "");
-    LoginEntry loginEntry2 = new LoginEntry("someIdp", "marker0", new Date(), "someSp", "", "");
+    LoginEntry loginEntry = new LoginEntry(0L, "someIdp", "marker0", new Date(), "someSp", "", "");
+    LoginEntry loginEntry2 = new LoginEntry(1L, "someIdp", "marker0", new Date(), "someSp", "", "");
 
     aggregator.aggregateLogin(Arrays.asList(loginEntry, loginEntry2));
 
@@ -119,10 +119,10 @@ public class AggregatorTest {
   @Test
   public void aggregateDifferentSpIdp() {
     int rowCountBefore = cruncherJdbcTemplate.queryForInt(sqlRowCountAggregated);
-    LoginEntry loginEntry1 = new LoginEntry("someIdp1", "marker1", new Date(), "someSp1", "", "");
-    LoginEntry loginEntry2 = new LoginEntry("someIdp2", "marker1", new Date(), "someSp1", "", "");
-    LoginEntry loginEntry3 = new LoginEntry("someIdp1", "marker1", new Date(), "someSp2", "", "");
-    LoginEntry loginEntry4 = new LoginEntry("someIdp2", "marker1", new Date(), "someSp2", "", "");
+    LoginEntry loginEntry1 = new LoginEntry(0L, "someIdp1", "marker1", new Date(), "someSp1", "", "");
+    LoginEntry loginEntry2 = new LoginEntry(1L, "someIdp2", "marker1", new Date(), "someSp1", "", "");
+    LoginEntry loginEntry3 = new LoginEntry(2L, "someIdp1", "marker1", new Date(), "someSp2", "", "");
+    LoginEntry loginEntry4 = new LoginEntry(3L, "someIdp2", "marker1", new Date(), "someSp2", "", "");
 
     aggregator.aggregateLogin(Arrays.asList(loginEntry1, loginEntry2, loginEntry3, loginEntry4));
 

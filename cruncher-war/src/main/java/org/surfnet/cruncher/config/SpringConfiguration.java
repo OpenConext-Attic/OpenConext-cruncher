@@ -19,19 +19,25 @@
 package org.surfnet.cruncher.config;
 
 import com.googlecode.flyway.core.Flyway;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.surfnet.oaaas.auth.AuthorizationServerFilter;
 
 import javax.inject.Inject;
 import javax.servlet.Filter;
 
 @EnableScheduling
+@EnableTransactionManagement
 @Configuration
 @PropertySource({"classpath:application.properties","classpath:cruncher.properties"})
 @ImportResource("classpath:aggregationScheduling.xml")
@@ -108,5 +114,15 @@ public class SpringConfiguration {
   @Bean
   public JdbcTemplate cruncherJdbcTemplate() {
     return new JdbcTemplate(cruncherDataSource());
+  }
+  
+  @Bean
+  public PlatformTransactionManager transactionManager() {
+    return new DataSourceTransactionManager(cruncherDataSource());
+  }
+  
+  @Bean
+  public TransactionTemplate transactionTemplate() {
+    return new TransactionTemplate(transactionManager());
   }
 }

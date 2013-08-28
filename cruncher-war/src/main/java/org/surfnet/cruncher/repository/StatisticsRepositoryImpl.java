@@ -22,7 +22,6 @@ import static org.surfnet.cruncher.message.Aggregator.aggregationRecordHash;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,8 +45,7 @@ import org.surfnet.cruncher.model.SpStatistic;
 public class StatisticsRepositoryImpl implements StatisticsRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatisticsRepositoryImpl.class);
-  public static final long POINT_INTERVAL = 1000L * 60L * 60L * 24L;
-  public static final long AGGREGATION_DELAY = 10L * 60L * 1000L;
+  private static final long POINT_INTERVAL = 24L * 60L * 60L * 1000L;
 
   @Inject
   private JdbcTemplate ebJdbcTemplate;
@@ -174,28 +172,25 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   public List<LoginEntry> getUnprocessedLoginEntries(int nrOfRecords) {
     Long aggregateStartingPoint = cruncherJdbcTemplate.queryForLong("select aggregatepoint from aggregate_meta_data");
     
-    long now = System.currentTimeMillis();
-    now = now - AGGREGATION_DELAY;
-    
     NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(ebJdbcTemplate);
     
-    String query = "select * from log_logins where loginstamp > :startingPoint and loginstamp < :now order by loginstamp LIMIT :batchSize";
+    String query = "select * from log_logins where id > :startingPoint order by id LIMIT :batchSize";
     
     Map<String, Object> parameterMap = new HashMap<String, Object>();
     parameterMap.put("batchSize", nrOfRecords);
-    parameterMap.put("startingPoint", new Timestamp(aggregateStartingPoint));
-    parameterMap.put("now", new Timestamp(now));
+    parameterMap.put("startingPoint", aggregateStartingPoint);
     
     return namedJdbcTemplate.query(query, parameterMap , new RowMapper<LoginEntry>(){
       @Override
       public LoginEntry mapRow(ResultSet rs, int rowNum) throws SQLException {
+        Long id = rs.getLong("id");
         String idpEntityId = rs.getString("idpentityid");
         String idpEntityName = rs.getString("idpentityname");
         Date loginDate = new Date(rs.getTimestamp("loginstamp").getTime());
         String spEntityId = rs.getString("spentityid");
         String spEntityName = rs.getString("spentityname");
         String userId = rs.getString("userid");
-        return new LoginEntry(idpEntityId, idpEntityName, loginDate, spEntityId, spEntityName, userId);
+        return new LoginEntry(id, idpEntityId, idpEntityName, loginDate, spEntityId, spEntityName, userId);
       }
     });
   }
@@ -203,7 +198,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   @Override
   public void setLoginEntriesProcessed(List<LoginEntry> entries) {
     LoginEntry last = entries.get(entries.size()-1);
-    cruncherJdbcTemplate.update("update aggregate_meta_data set aggregatepoint = ?", last.getLoginDate().getTime());
+    cruncherJdbcTemplate.update("update aggregate_meta_data set aggregatepoint = ?", last.getId());
   }
 
   @Override

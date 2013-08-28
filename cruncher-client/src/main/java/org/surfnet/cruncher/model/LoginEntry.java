@@ -25,7 +25,8 @@ import java.util.Date;
 public class LoginEntry implements Serializable {
   private static final long serialVersionUID = -3406146073511813593L;
 
-  public LoginEntry(String idpEntityId, String idpEntityName, Date loginDate, String spEntityId, String spEntityName, String userId) {
+  public LoginEntry(Long id, String idpEntityId, String idpEntityName, Date loginDate, String spEntityId, String spEntityName, String userId) {
+    this.id = id;
     this.idpEntityId = idpEntityId;
     this.idpEntityName = idpEntityName;
     this.loginDate = loginDate;
@@ -34,12 +35,17 @@ public class LoginEntry implements Serializable {
     this.userId = userId;
   }
 
+  private Long id;
   private Date loginDate;
   private String userId;
   private String spEntityId;
   private String idpEntityId;
   private String spEntityName;
   private String idpEntityName;
+
+  public Long getId() {
+    return id;
+  }
 
   public Date getLoginDate() {
     return loginDate;
@@ -67,7 +73,7 @@ public class LoginEntry implements Serializable {
 
   @Override
   public String toString() {
-    return "Login at "+loginDate+" of "+userId+" on "+ idpEntityId +" sp " + spEntityId;
+    return "Login ("+id+") at "+loginDate+" of "+userId+" on "+ idpEntityId +" sp " + spEntityId;
   }
   
   

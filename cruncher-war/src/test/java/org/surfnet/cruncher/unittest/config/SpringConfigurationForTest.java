@@ -26,6 +26,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.inject.Inject;
 
@@ -82,5 +83,10 @@ public class SpringConfigurationForTest {
   @Bean
   public PlatformTransactionManager transactionManager() {
     return new DataSourceTransactionManager(dataSource());
+  }
+  
+  @Bean
+  public TransactionTemplate transactionTemplate() {
+    return new TransactionTemplate(transactionManager());
   }
 }
