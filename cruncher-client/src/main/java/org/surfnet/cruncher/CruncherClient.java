@@ -86,13 +86,7 @@ public class CruncherClient implements Cruncher {
   }
 
   private String doJsonGetFromCruncher(String subPath, Map<String, ?> variables) {
-    String result = "";
-    try {
-      result = oauthClient.exchange(cruncherBaseLocation + subPath, variables, String.class);
-    } catch (RuntimeException e) {
-      LOG.warn("Exception while contacting the cruncher, returning empty result", e);
-    }
-    return result;
+    return oauthClient.exchange(cruncherBaseLocation + subPath, variables, String.class);
   }
 
 
