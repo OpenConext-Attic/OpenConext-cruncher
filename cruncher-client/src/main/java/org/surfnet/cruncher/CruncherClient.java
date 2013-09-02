@@ -19,9 +19,13 @@
 package org.surfnet.cruncher;
 
 import nl.surfnet.coin.oauth.OauthClient;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import org.surfnet.cruncher.model.SpStatistic;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +33,7 @@ import java.util.Map;
 
 
 public class CruncherClient implements Cruncher {
+  private static final Logger LOG = LoggerFactory.getLogger(CruncherClient.class); 
 
   private OauthClient oauthClient;
 
@@ -63,10 +68,16 @@ public class CruncherClient implements Cruncher {
 
   @Override
   public List<SpStatistic> getRecentLoginsForUser(String userId, String idpEntityId) {
-    Map<String, String> variables = new HashMap<String, String>();
-    variables.put("idpEntityId", idpEntityId);
-    variables.put("userId", userId);
-    return (List<SpStatistic>) oauthClient.exchange(cruncherBaseLocation + "/lastlogin?idpEntityId={idpEntityId}&userId={userId}", variables, SpStatistic[].class);
+    List<SpStatistic> recentLogins = new ArrayList<SpStatistic>();
+    try {
+      Map<String, String> variables = new HashMap<String, String>();
+      variables.put("idpEntityId", idpEntityId);
+      variables.put("userId", userId);
+      recentLogins = oauthClient.exchange(cruncherBaseLocation + "/lastlogin?idpEntityId={idpEntityId}&userId={userId}", variables, SpStatistic[].class);
+    } catch (RuntimeException e) {
+      LOG.warn("Exception while contacting the cruncher, returning empty result", e);
+    }
+    return recentLogins;
   }
 
   @Override
@@ -75,12 +86,18 @@ public class CruncherClient implements Cruncher {
   }
 
   private String doJsonGetFromCruncher(String subPath, Map<String, ?> variables) {
-    return oauthClient.exchange(cruncherBaseLocation + subPath, variables, String.class);
+    String result = "";
+    try {
+      result = oauthClient.exchange(cruncherBaseLocation + subPath, variables, String.class);
+    } catch (RuntimeException e) {
+      LOG.warn("Exception while contacting the cruncher, returning empty result", e);
+    }
+    return result;
   }
 
 
   private Map<String, Object> getLoginsVariables(final Date startDate, final Date endDate, String spEntityId, String idpEntityId) {
-    Map variables = new HashMap<String, Object>();
+    Map<String, Object> variables = new HashMap<String, Object>();
     if (StringUtils.hasText(idpEntityId)) {
       variables.put("idpEntityId", idpEntityId);
     }
