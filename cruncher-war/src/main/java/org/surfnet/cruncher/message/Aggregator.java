@@ -71,18 +71,53 @@ public class Aggregator {
    * crunching is disabled until the original error is recovered
    */
   public void run() {
+    AggregateCounts counts = new AggregateCounts();
     LOG.info("Running aggregation task, batch size {}", batchSize);
+    long lockAquired = 0L;
+    long loginsRetrieved = 0L;
+    long crunched = 0L;
+    long lockReleased = 0L;
+    long totalTime = 0L;
+    long startTime = System.currentTimeMillis();
+
     if (!enabled) {
       LOG.info("Not running aggregation task, because aggregation.enabled=false");
       return;
     }
     if (statisticsRepository.lockForCrunching()) {
+      lockAquired = System.currentTimeMillis();
       List<LoginEntry> entries = statisticsRepository.getUnprocessedLoginEntries(batchSize);
+      loginsRetrieved = System.currentTimeMillis();
       LOG.debug("Got {} unprocessed login entries", entries.size());
-      aggregateLogin(entries);
+      counts = aggregateLogin(entries);
+      crunched = System.currentTimeMillis();
       statisticsRepository.unlockForCrunching();
+      lockReleased = System.currentTimeMillis();
+
+      // convert timestamp to time spend
+      totalTime = System.currentTimeMillis() - startTime;
+      lockReleased = lockReleased - crunched;
+      crunched = crunched - loginsRetrieved;
+      loginsRetrieved = loginsRetrieved - lockAquired;
+      lockAquired = lockAquired - startTime;
     } else {
       LOG.debug("Someone else is crunching, not doing anything");
+    }
+    LOG.info("logins retrieved in " + loginsRetrieved + " ms, crunching took " + totalTime + " ms");
+    
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("detailed results of this aggregate run:");
+      LOG.debug("total number of records handled: " + counts.total);
+      LOG.debug("number of new aggregation records inserted: " + counts.aggregated_insert);
+      LOG.debug("number of aggregation records updated: " + counts.aggregated_update);
+      LOG.debug("number of new user records inserted: " + counts.user_insert);
+      LOG.debug("number of user records updated: " + counts.user_update);
+      LOG.debug("detailed timing (in ms)");
+      LOG.debug("time to aquire the 'lock': " + lockAquired);
+      LOG.debug("time to retrieve the logins: " + loginsRetrieved);
+      LOG.debug("time to crunch the data: " + crunched);
+      LOG.debug("time to release the 'lock': " + lockReleased);
+      LOG.debug("total time in this run: " + totalTime);
     }
   }
 
@@ -91,7 +126,7 @@ public class Aggregator {
    * This will
    * @param loginEntries
    */
-  public void aggregateLogin(final List<LoginEntry> loginEntries) {
+  public AggregateCounts aggregateLogin(final List<LoginEntry> loginEntries) {
     if (loginEntries == null) {
       throw new IllegalArgumentException("List of loginEntries cannot be null.");
     }
@@ -134,14 +169,7 @@ public class Aggregator {
       }
     });
     
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Results of this aggregate run:");
-      LOG.debug("total number of records handled: " + counts.total);
-      LOG.debug("number of new aggregation records inserted: " + counts.aggregated_insert);
-      LOG.debug("number of aggregation records updated: " + counts.aggregated_update);
-      LOG.debug("number of new user records inserted: " + counts.user_insert);
-      LOG.debug("number of user records updated: " + counts.user_update);
-    }
+    return counts;
   }
 
   @PreDestroy

@@ -31,5 +31,5 @@ CREATE TABLE aggregate_meta_data (
   active BIT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-INSERT INTO aggregate_meta_data (aggregatepoint)
-  VALUES (unix_timestamp(now() - interval 6 month) * 1000);
+INSERT INTO aggregate_meta_data (aggregatepoint, active)
+   VALUES (0, TRUE);
