@@ -101,7 +101,7 @@ public class Aggregator {
       loginsRetrieved = loginsRetrieved - lockAquired;
       lockAquired = lockAquired - startTime;
     } else {
-      LOG.debug("Someone else is crunching, not doing anything");
+      LOG.info("Someone else is crunching, not doing anything");
     }
     LOG.info("logins retrieved in " + loginsRetrieved + " ms, crunching took " + totalTime + " ms");
     
