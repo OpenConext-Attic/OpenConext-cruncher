@@ -16,12 +16,6 @@
 
 package org.surfnet.cruncher.message;
 
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -34,6 +28,11 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.surfnet.cruncher.model.LoginEntry;
 import org.surfnet.cruncher.repository.StatisticsRepository;
+
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import java.util.Date;
+import java.util.List;
 
 @Component("aggregator")
 public class Aggregator {
@@ -78,24 +77,24 @@ public class Aggregator {
     long crunched = 0L;
     long lockReleased = 0L;
     long totalTime = 0L;
-    long startTime = System.currentTimeMillis();
+    long startTime = now();
 
     if (!enabled) {
       LOG.info("Not running aggregation task, because aggregation.enabled=false");
       return;
     }
     if (statisticsRepository.lockForCrunching()) {
-      lockAquired = System.currentTimeMillis();
+      lockAquired = now();
       List<LoginEntry> entries = statisticsRepository.getUnprocessedLoginEntries(batchSize);
-      loginsRetrieved = System.currentTimeMillis();
+      loginsRetrieved = now();
       LOG.debug("Got {} unprocessed login entries", entries.size());
       counts = aggregateLogin(entries);
-      crunched = System.currentTimeMillis();
+      crunched = now();
       statisticsRepository.unlockForCrunching();
-      lockReleased = System.currentTimeMillis();
+      lockReleased = now();
 
       // convert timestamp to time spend
-      totalTime = System.currentTimeMillis() - startTime;
+      totalTime = now() - startTime;
       lockReleased = lockReleased - crunched;
       crunched = crunched - loginsRetrieved;
       loginsRetrieved = loginsRetrieved - lockAquired;
@@ -119,6 +118,10 @@ public class Aggregator {
       LOG.debug("time to release the 'lock': " + lockReleased);
       LOG.debug("total time in this run: " + totalTime);
     }
+  }
+
+  private long now() {
+    return System.currentTimeMillis();
   }
 
   /**
