@@ -78,4 +78,6 @@ public interface StatisticsRepository {
   void insertLastLogin(LoginEntry le);
 
   void updateLastLogin(String userId, String spEntityId, Date loginDate);
+
+  void cleanTables(int retention);
 }

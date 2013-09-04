@@ -26,5 +26,6 @@
   <task:scheduler id="scheduler" pool-size="1"/>
   <task:scheduled-tasks scheduler="scheduler">
     <task:scheduled ref="aggregator" method="run" fixed-delay="${aggregation.interval}"/>
+    <task:scheduled ref="cleaner" method="run" cron="${cleaner.cron}"/>
   </task:scheduled-tasks>
 </beans>

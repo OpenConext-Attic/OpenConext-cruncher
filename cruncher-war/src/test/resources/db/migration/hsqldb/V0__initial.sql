@@ -130,3 +130,10 @@ INSERT INTO aggregated_log_logins (entryday, spentityid, spentityname, idpentity
   VALUES('2013-01-12', 'sp1', 'sp1_name','idp2','idp2_name', 15, 26);
 INSERT INTO aggregated_log_logins (entryday, spentityid, spentityname, idpentityid, idpentityname, entrycount, datespidphash)
   VALUES('2014-01-12', 'sp1', 'sp1_name','idp2','idp2_name', 10, 27);
+
+
+-- insert user log logins
+INSERT INTO user_log_logins (loginstamp, userid, spentityid, idpentityid, usersphash)
+  VALUES ('2012-01-01 01:00:00', 'user1', 'sp1', 'idp1', 'user1sp1idp1');
+INSERT INTO user_log_logins (loginstamp, userid, spentityid, idpentityid, usersphash)
+  VALUES ('2012-01-01 01:00:00', 'user2', 'sp1', 'idp1', 'user2sp1idp1');

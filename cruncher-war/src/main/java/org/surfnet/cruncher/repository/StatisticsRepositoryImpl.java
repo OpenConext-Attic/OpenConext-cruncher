@@ -22,8 +22,11 @@ import static org.surfnet.cruncher.message.Aggregator.aggregationRecordHash;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -257,5 +260,29 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     return parameterMap;
   }
 
+  @Override
+  public void cleanTables(int retention) {
+    Calendar retentionTime = createRetentionTime(retention);
+    cleanAggregatedLogins(retentionTime.getTime());
+    cleanUserLogins(retentionTime.getTime());
+  }
 
+  private Calendar createRetentionTime(int retention) {
+    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+    Calendar retentionTime = new GregorianCalendar();
+    retentionTime.setLenient(true);
+    retentionTime.add(Calendar.MONTH, -retention);
+    LOG.debug("Cleaning tables to date " + sdf.format(retentionTime.getTime()));
+    return retentionTime;
+  }
+  
+  private void cleanAggregatedLogins(Date retentionTime) {
+    String sql = "delete from aggregated_log_logins where entryday <= ?";
+    cruncherJdbcTemplate.update(sql, retentionTime);
+  }
+  
+  private void cleanUserLogins(Date retentionTime) {
+    String sql = "delete from user_log_logins where loginstamp <= ?";
+    cruncherJdbcTemplate.update(sql, retentionTime);
+  }
 }
