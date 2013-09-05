@@ -263,8 +263,9 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
   @Override
   public void cleanTables(int retention) {
     Calendar retentionTime = createRetentionTime(retention);
-    cleanAggregatedLogins(retentionTime.getTime());
-    cleanUserLogins(retentionTime.getTime());
+    int logins_cleaned = cleanAggregatedLogins(retentionTime.getTime());
+    int users_cleaned = cleanUserLogins(retentionTime.getTime());
+    LOG.info("removed {} logins records and {} user records", logins_cleaned, users_cleaned);
   }
 
   private Calendar createRetentionTime(int retention) {
@@ -276,13 +277,13 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     return retentionTime;
   }
   
-  private void cleanAggregatedLogins(Date retentionTime) {
+  private int cleanAggregatedLogins(Date retentionTime) {
     String sql = "delete from aggregated_log_logins where entryday <= ?";
-    cruncherJdbcTemplate.update(sql, retentionTime);
+    return cruncherJdbcTemplate.update(sql, retentionTime);
   }
   
-  private void cleanUserLogins(Date retentionTime) {
+  private int cleanUserLogins(Date retentionTime) {
     String sql = "delete from user_log_logins where loginstamp <= ?";
-    cruncherJdbcTemplate.update(sql, retentionTime);
+    return cruncherJdbcTemplate.update(sql, retentionTime);
   }
 }
