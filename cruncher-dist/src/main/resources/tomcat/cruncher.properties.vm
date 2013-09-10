@@ -15,16 +15,16 @@
 #
 
 # The engineblock database settings
-eb.jdbc.url=jdbc\:mysql\://db._OPENCONEXT_DOMAIN_\:3306/engineblock
+eb.jdbc.url=jdbc:mysql://db._OPENCONEXT_DOMAIN_:3306/engineblock
 eb.jdbc.username=root
 eb.jdbc.password=c0n3xt
 
 # cruncher database settings
-cruncher.jdbc.url=jdbc\:mysql\://db._OPENCONEXT_DOMAIN_\:3306/cruncher
+cruncher.jdbc.url=jdbc:mysql://db._OPENCONEXT_DOMAIN_:3306/cruncher
 cruncher.jdbc.username=root
 cruncher.jdbc.password=c0n3xt
 
 # Info for communication with the APIS Authorization Server
-authorizationServer.url=https\\\://apis._OPENCONEXT_DOMAIN_/v1/tokeninfo
+authorizationServer.url=https://apis._OPENCONEXT_DOMAIN_/v1/tokeninfo
 authorizationServer.key=cruncher
 authorizationServer.secret=cruncher-secret
