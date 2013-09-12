@@ -15,7 +15,7 @@
 #
 
 # The engineblock database settings
-eb.jdbc.url=jdbc:mysql://db._OPENCONEXT_DOMAIN_:3306/eb
+eb.jdbc.url=jdbc:mysql://db._OPENCONEXT_DOMAIN_:3306/engineblock
 eb.jdbc.username=root
 eb.jdbc.password=c0n3xt
 
