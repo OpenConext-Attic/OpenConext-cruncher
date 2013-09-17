@@ -21,12 +21,19 @@
     </encoder>
   </appender>
   
-  <logger name="com.googlecode.flyway.core" level="debug" />
+  <logger name="com.googlecode.flyway.core" level="info" additivity="false">
+    <appender-ref ref="console"/>
+  </logger>
 
-  <logger name="org.surfnet" level="trace" />
-  <logger name="nl.surfnet" level="trace" />
+  <logger name="org.surfnet" level="debug" additivity="false">
+    <appender-ref ref="console"/>
+  </logger>
+  
+  <logger name="nl.surfnet" level="debug" additivity="false">
+    <appender-ref ref="console"/>
+  </logger>
 
-  <root level="debug">
+  <root level="info">
     <appender-ref ref="console"/>
   </root>
 </configuration>

@@ -18,7 +18,14 @@ public class Cleaner {
   @Value("${cleaner.retention}")
   private int retention;
   
+  @Value("${cleaner.enabled}")
+  private boolean enabled;
+  
   public void run() {
+    if (!enabled) {
+      LOG.info("cleaning disabled, because cleaning.enabled=false");
+      return;
+    }
     LOG.info("Running database cleanup for the cruncher retention period is " + retention + " month(s)");
     statisticsRepository.cleanTables(retention);
   }

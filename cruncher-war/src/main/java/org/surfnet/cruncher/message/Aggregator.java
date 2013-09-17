@@ -70,6 +70,11 @@ public class Aggregator {
    * crunching is disabled until the original error is recovered
    */
   public void run() {
+    if (!enabled) {
+      LOG.info("aggregation disabled, because aggregation.enabled=false");
+      return;
+    }
+    
     AggregateCounts counts = new AggregateCounts();
     LOG.info("Running aggregation task, batch size {}", batchSize);
     long lockAquired = 0L;
@@ -79,10 +84,7 @@ public class Aggregator {
     long totalTime = 0L;
     long startTime = now();
 
-    if (!enabled) {
-      LOG.info("Not running aggregation task, because aggregation.enabled=false");
-      return;
-    }
+    
     if (statisticsRepository.lockForCrunching()) {
       lockAquired = now();
       List<LoginEntry> entries = statisticsRepository.getUnprocessedLoginEntries(batchSize);
