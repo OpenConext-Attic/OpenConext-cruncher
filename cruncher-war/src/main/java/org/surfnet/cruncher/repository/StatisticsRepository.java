@@ -25,6 +25,7 @@ import org.joda.time.LocalDate;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.LoginEntry;
 import org.surfnet.cruncher.model.SpStatistic;
+import org.surfnet.cruncher.model.VersStatistic;
 
 public interface StatisticsRepository {
   
@@ -80,4 +81,6 @@ public interface StatisticsRepository {
   void updateLastLogin(String userId, String spEntityId, Date loginDate);
 
   void cleanTables(int retention);
+
+  VersStatistic getVersStats(LocalDate startDate, LocalDate endDate, String spEntityId);
 }

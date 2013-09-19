@@ -18,12 +18,23 @@
  */
 package org.surfnet.cruncher.config;
 
-import com.googlecode.flyway.core.Flyway;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import javax.inject.Inject;
+import javax.servlet.Filter;
+
+import nl.surfnet.coin.janus.Janus;
+import nl.surfnet.coin.janus.JanusRestClient;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -33,8 +44,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.surfnet.oaaas.auth.AuthorizationServerFilter;
 
-import javax.inject.Inject;
-import javax.servlet.Filter;
+import com.googlecode.flyway.core.Flyway;
 
 @EnableScheduling
 @EnableTransactionManagement
@@ -124,5 +134,28 @@ public class SpringConfiguration {
   @Bean
   public TransactionTemplate transactionTemplate() {
     return new TransactionTemplate(transactionManager());
+  }
+  
+  @Bean
+  public Janus janusRestClient() {
+    Janus result = null;
+    String className = env.getProperty("janus.class");
+    if (StringUtils.isNotBlank(className)) {
+      try {
+        result = (Janus) getClass().getClassLoader().loadClass(className).newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }      
+    } else {
+      result = new JanusRestClient();
+    }
+    try {
+      result.setJanusUri(new URI(env.getProperty("janus.uri")));
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+    result.setUser(env.getProperty("janus.user"));
+    result.setSecret(env.getProperty("janus.secret"));
+    return result;
   }
 }

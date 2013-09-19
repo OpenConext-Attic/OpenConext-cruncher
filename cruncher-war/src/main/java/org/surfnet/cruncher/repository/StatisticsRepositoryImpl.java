@@ -43,6 +43,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.surfnet.cruncher.model.LoginData;
 import org.surfnet.cruncher.model.LoginEntry;
 import org.surfnet.cruncher.model.SpStatistic;
+import org.surfnet.cruncher.model.VersStatistic;
 
 @Named
 public class StatisticsRepositoryImpl implements StatisticsRepository {
@@ -286,4 +287,39 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     String sql = "delete from user_log_logins where loginstamp <= ?";
     return cruncherJdbcTemplate.update(sql, retentionTime);
   }
+
+  @Override
+  public VersStatistic getVersStats(LocalDate startDate, LocalDate endDate, String spEntityId) {
+    final VersStatistic result = new VersStatistic();
+    
+    NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(cruncherJdbcTemplate);
+    String query =
+        "select idpentityid, sum(entrycount) as loginCount from aggregated_log_logins " +
+        "where " +
+        "entryday >= :startDate AND " +
+        "entryday <= :endDate AND " +
+        "spentityid = :spEntityId " +
+        "group by idpentityid " +
+        "order by idpentityid";
+    
+    Map<String, Object> parameterMap = new HashMap<String, Object>();
+    parameterMap.put("startDate", new Date(startDate.toDateMidnight().getMillis()));
+    parameterMap.put("endDate", new Date(endDate.toDateMidnight().getMillis()));
+    parameterMap.put("spEntityId", spEntityId);
+    
+    namedJdbcTemplate.query(query, parameterMap , new RowMapper<VersStatistic>() {
+      
+      @Override
+      public VersStatistic mapRow(ResultSet rs, int row) throws SQLException {
+        String idpEntityId = rs.getString("idpEntityId");
+        result.addInstitutionCount(idpEntityId, rs.getLong("loginCount"));
+        
+        // no rowbased result
+        return null;
+      }
+    });
+    
+    return result;
+  }
+  
 }
