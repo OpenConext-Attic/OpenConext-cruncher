@@ -22,30 +22,35 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class VersStatistic {
-  private long totalLoginCount;
-  private long uniqueLoginCount;
-  private Map<String, Long> institutionCounts = new HashMap<String,Long>();
+  private long totalLogins = 0L;
+  private long totalUniqueLogins = 0L;
+  private Map<String, Long> institutionLogins = new HashMap<String,Long>();
   
-  public long getTotalLoginCount() {
-    return totalLoginCount;
+  public long getTotalLogins() {
+    return totalLogins;
   }
-  public void setTotalLoginCount(long totalLoginCount) {
-    this.totalLoginCount = totalLoginCount;
+  
+  public void setTotalLogins(long totalLogins) {
+    this.totalLogins = totalLogins;
   }
-  public long getUniqueLoginCount() {
-    return uniqueLoginCount;
+  
+  public long getTotalUniqueLogins() {
+    return totalUniqueLogins;
   }
-  public void setUniqueLoginCount(long uniqueLoginCount) {
-    this.uniqueLoginCount = uniqueLoginCount;
+  
+  public void setTotalUniqueLogins(long totalUniqueLogins) {
+    this.totalUniqueLogins = totalUniqueLogins;
   }
-  public Map<String, Long> getInstitutionCounts() {
-    return institutionCounts;
+  
+  public Map<String, Long> getInstitutionLogins() {
+    return institutionLogins;
   }
-  public void addInstitutionCount(final String key, final Long value) {
-    if (null == institutionCounts.get(key)) {
-      institutionCounts.put(key, value);
+  
+  public void addInstitutionLoginCount(final String key, final Long value) {
+    if (null == institutionLogins.get(key)) {
+      institutionLogins.put(key, value);
     } else {
-      institutionCounts.put(key, (institutionCounts.get(key)+value));
+      institutionLogins.put(key, (institutionLogins.get(key)+value));
     }
   }
 }

@@ -135,6 +135,20 @@ public class AggregatorTest {
     assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(2));
     assertEquals("Aggegrated records should all count 1", new Integer(1), aggregatedCount.get(3));
   }
+  
+  @Test
+  public void testUniqueLoginInsert() {
+    int rowCountBefore = cruncherJdbcTemplate.queryForInt(sqlRowCountAggregated);
+    LoginEntry loginEntry = new LoginEntry(0L, "someIdp", "marker0", new Date(), "someSp", "", "");
+    LoginEntry loginEntry2 = new LoginEntry(1L, "someIdp", "marker0", new Date(), "someSp", "", "");
+
+    aggregator.aggregateLogin(Arrays.asList(loginEntry, loginEntry2));
+
+    int rowCountAfter = cruncherJdbcTemplate.queryForInt(sqlRowCountAggregated);
+    assertEquals("Aggregation of 2 records should result in 1 added rows", rowCountBefore + 1, rowCountAfter);
+    int aggregatedCount = cruncherJdbcTemplate.queryForInt("select entrycount from aggregated_log_logins where idpentityname like 'marker0'");
+    assertEquals("Aggegrated records should count 2", 2, aggregatedCount);
+  }
 
   /*
    * This test is more useful with a debugger attached. But at least if no

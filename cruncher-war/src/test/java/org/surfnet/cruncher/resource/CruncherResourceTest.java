@@ -215,6 +215,7 @@ public class CruncherResourceTest {
     assertNotNull(result);
     VersStatistic stats = (VersStatistic) result.getEntity();
     assertNotNull(stats);
-    assertEquals(new Long(120), stats.getInstitutionCounts().get("idp1"));    
+    assertEquals(120, stats.getTotalLogins());
+    assertEquals(new Long(120), stats.getInstitutionLogins().get("mock-institution-id"));    
   }
 }

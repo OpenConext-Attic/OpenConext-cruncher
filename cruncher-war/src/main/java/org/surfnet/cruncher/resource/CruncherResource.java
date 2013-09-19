@@ -86,9 +86,20 @@ public class CruncherResource {
   public Response getVersStatistics(@QueryParam("month") Integer month,
       @QueryParam("year") Integer year, @QueryParam("spEntityId") String spEntityId) {
     invariant(month, year, spEntityId);
+    VersStatistic result = new VersStatistic();
+    
     LocalDate startDate = new LocalDate(year, month, 1);
     LocalDate endDate = startDate.plusMonths(1);
-    VersStatistic result = statisticsRepository.getVersStats(startDate, endDate, spEntityId);
+    VersStatistic queryResult = statisticsRepository.getVersStats(startDate, endDate, spEntityId);
+    Map<String, String> idpInstitutions = getInstitutionIdsFromJanus();
+    Iterator<String> keyIterator = queryResult.getInstitutionLogins().keySet().iterator();
+    while (keyIterator.hasNext()) {
+      String key = keyIterator.next();
+      Long institutionCount = queryResult.getInstitutionLogins().get(key);
+      String institutionId = idpInstitutions.get(key);
+      result.addInstitutionLoginCount(institutionId, institutionCount);
+      result.setTotalLogins(result.getTotalLogins() + institutionCount);
+    }
     return Response.ok(result).build();
   }
   

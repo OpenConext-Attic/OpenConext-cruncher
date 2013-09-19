@@ -45,6 +45,26 @@ CREATE TABLE user_log_logins (
   UNIQUE (usersphash)
 );
 
+DROP TABLE IF EXISTS user_unique_logins;
+CREATE TABLE user_unique_logins (
+  spentityid varchar(1000) DEFAULT NULL,
+  idpentityid varchar(1000) DEFAULT NULL,
+  entrycount bigint NOT NULL,
+  timespan integer NOT NULL,
+  month integer DEFAULT NULL,
+  year integer DEFAULT NULL
+);
+
+DROP TABLE IF EXISTS user_unique_logins_cache;
+CREATE TABLE user_unique_logins_cache (
+  userid varchar(1000) NOT NULL,
+  spentityid varchar(1000) DEFAULT NULL,
+  idpentityid varchar(1000) DEFAULT NULL,
+  timespan integer NOT NULL,
+  month integer DEFAULT NULL,
+  year integer DEFAULT NULL
+);
+
 INSERT INTO aggregate_meta_data (aggregatepoint)
   VALUES (0);
   

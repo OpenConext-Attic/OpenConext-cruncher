@@ -312,7 +312,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
       @Override
       public VersStatistic mapRow(ResultSet rs, int row) throws SQLException {
         String idpEntityId = rs.getString("idpEntityId");
-        result.addInstitutionCount(idpEntityId, rs.getLong("loginCount"));
+        result.addInstitutionLoginCount(idpEntityId, rs.getLong("loginCount"));
         
         // no rowbased result
         return null;
