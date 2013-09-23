@@ -164,14 +164,26 @@ public class Aggregator {
             statisticsRepository.insertLastLogin(le);
             result.user_insert += 1;
           }
+          
+          //update the unique user login table
+          if (!entryForUniqueUserExists(le)) {
+            LOG.trace("Inserting unique user login record for user {}, record: {}", le.getUserId(), le);
+            statisticsRepository.insertUniqueLoginInCache(le);
+          }
         }
         
         if (loginEntries.size() > 0) {
           statisticsRepository.setLoginEntriesProcessed(loginEntries);
         }
         
+        /*
+         * If we have moved from one month to the other, we need to update
+         * the unique user logins for this month.
+         */
+        statisticsRepository.aggregateUniqueLoginsIfNeeded();
         return result;
       }
+      
     });
     
     return counts;
@@ -190,6 +202,10 @@ public class Aggregator {
   
   private boolean entryForUserExists(LoginEntry le) {
     return statisticsRepository.lastLogonExists(le.getUserId(), le.getSpEntityId());
+  }
+  
+  private boolean entryForUniqueUserExists(LoginEntry le) {
+    return statisticsRepository.uniqueUserLogonExists(le.getUserId(), le.getLoginDate(), le.getSpEntityId(), le.getIdpEntityId());
   }
 
   /**

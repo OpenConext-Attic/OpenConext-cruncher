@@ -83,4 +83,10 @@ public interface StatisticsRepository {
   void cleanTables(int retention);
 
   VersStatistic getVersStats(LocalDate startDate, LocalDate endDate, String spEntityId);
+
+  void insertUniqueLoginInCache(LoginEntry le);
+
+  boolean uniqueUserLogonExists(String userId, Date loginDate, String spEntityId, String idpEntityId);
+
+  void aggregateUniqueLoginsIfNeeded();
 }

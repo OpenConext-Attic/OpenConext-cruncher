@@ -18,6 +18,8 @@
  */
 package org.surfnet.cruncher.repository;
 
+import static java.util.Calendar.MONTH;
+import static java.util.Calendar.YEAR;
 import static org.surfnet.cruncher.message.Aggregator.aggregationRecordHash;
 
 import java.sql.ResultSet;
@@ -50,6 +52,23 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatisticsRepositoryImpl.class);
   private static final long POINT_INTERVAL = 24L * 60L * 60L * 1000L;
+  
+  /**
+   * This simple enum is used to identify different timespan 'types' in the unique
+   * user logins table. Currently we only use and support unique logins per month.
+   * The database is however already prepared for unique logins per week or year if
+   * required.
+   */
+  private enum TimeSpan {
+    MONTH(12);
+    private final int code;
+    private TimeSpan(int code) {
+      this.code = code;
+    }
+    public int getCode() {
+      return this.code;
+    }
+  }
 
   @Inject
   private JdbcTemplate ebJdbcTemplate;
@@ -321,5 +340,85 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     
     return result;
   }
-  
+
+  @Override
+  public void insertUniqueLoginInCache(LoginEntry le) {
+    Calendar entryDate = new GregorianCalendar();
+    entryDate.setTime(le.getLoginDate());
+    int month = entryDate.get(MONTH) + 1; //this stupid thing is 0 based
+    int year = entryDate.get(YEAR);
+    
+    LOG.debug("Inserting new unique user record for user {} on date {}, record: {}", new Object[] {le.getUserId(), le.getLoginDate(), le});
+    cruncherJdbcTemplate.update("insert into user_unique_logins_cache (userid,spentityid,idpentityid,timespan,month,year)" +
+      " values (?, ?, ?, ?, ?, ?)",
+      le.getUserId(), le.getSpEntityId(), le.getIdpEntityId(), TimeSpan.MONTH.getCode(), month, year);
+  }
+
+  @Override
+  public boolean uniqueUserLogonExists(String userId, Date loginDate, String spEntityId, String idpEntityId) {
+    NamedParameterJdbcTemplate namedTemplate = new NamedParameterJdbcTemplate(cruncherJdbcTemplate);
+    String query =
+    		"select count(*) from user_unique_logins_cache " +
+    		"where " +
+    		"userId=:userId AND " +
+    		"spEntityId=:spEntityId AND " +
+    		"idpEntityId=:idpEntityId AND " +
+    		"timespan=:timespan AND " +
+    		"month=:month AND " +
+    		"year=:year";
+    
+    Calendar entryDate = new GregorianCalendar();
+    entryDate.setTime(loginDate);
+    int month = entryDate.get(MONTH) + 1; //this stupid thing is 0 based
+    int year = entryDate.get(YEAR);
+    
+    Map<String, Object> parameterMap = new HashMap<String, Object>();
+    parameterMap.put("userId", userId);
+    parameterMap.put("spEntityId", spEntityId);
+    parameterMap.put("idpEntityId", idpEntityId);
+    parameterMap.put("timespan", TimeSpan.MONTH.getCode());
+    parameterMap.put("month", month);
+    parameterMap.put("year", year);
+    
+    return namedTemplate.queryForInt(query, parameterMap) > 0;
+  }
+
+  @Override
+  public void aggregateUniqueLoginsIfNeeded() {
+    Calendar cruncherTime = getCurrentCruncherTime();
+    int month = cruncherTime.get(MONTH) + 1; //this stupid thing is 0 based
+    int year = cruncherTime.get(YEAR);
+    
+    /* check whether we have rows to aggregate */
+    int rowCount = cruncherJdbcTemplate.queryForInt("select count(*) from user_unique_logins_cache where month < ? OR year < ?", month, year);
+    if (rowCount > 0) {
+      LOG.debug("found {} rows in the unique user login cache that need to move to the unique user login table", rowCount);
+      aggregateUserUniqueLogins(month, year);
+    } else {
+      LOG.debug("currently no records found to aggregate in the user_unique_logins tables");
+    }
+  }
+
+  private void aggregateUserUniqueLogins(int month, int year) {
+    String query = "insert into user_unique_logins " +
+        "(spentityid, idpentityid, entrycount, timespan, month, year) " +
+        "select " +
+        "spentityid, idpentityid, count(*), timespan, month, year " +
+        "from user_unique_logins_cache  " +
+        "where " +
+        "month < ? OR year < ? " +
+        "group by spentityid, idpentityid, timespan, month, year";
+    cruncherJdbcTemplate.update(query, month, year);
+    
+    /* remove the entries we just aggregated */
+    cruncherJdbcTemplate.update("delete from user_unique_logins_cache where month < ? OR year < ?", month, year);
+  }
+
+  private Calendar getCurrentCruncherTime() {
+    /* determine the current point in time where the cruncher works on */
+    Date currentDate = cruncherJdbcTemplate.queryForObject("select entryday from aggregated_log_logins order by id DESC LIMIT 1;", Date.class);
+    Calendar calendar = new GregorianCalendar();
+    calendar.setTime(currentDate);
+    return calendar;
+  }
 }

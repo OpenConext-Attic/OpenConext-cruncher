@@ -16,7 +16,8 @@
 
 package org.surfnet.cruncher.message;
 
-import static java.util.Calendar.DAY_OF_MONTH;
+
+import static java.util.Calendar.*;
 import static java.util.Calendar.MONDAY;
 import static java.util.Calendar.YEAR;
 import static org.junit.Assert.assertEquals;
@@ -29,6 +30,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -138,50 +140,40 @@ public class AggregatorTest {
   
   @Test
   public void testUniqueLoginInsert() {
-    int rowCountBefore = cruncherJdbcTemplate.queryForInt(sqlRowCountAggregated);
-    LoginEntry loginEntry = new LoginEntry(0L, "someIdp", "marker0", new Date(), "someSp", "", "");
-    LoginEntry loginEntry2 = new LoginEntry(1L, "someIdp", "marker0", new Date(), "someSp", "", "");
+    LoginEntry loginEntry = new LoginEntry(0L, "someIdp", "marker0", new Date(), "someSp", "", "user-1");
+    LoginEntry loginEntry2 = new LoginEntry(1L, "someIdp", "marker0", new Date(), "someSp", "", "user-1");
+    LoginEntry loginEntry3 = new LoginEntry(2L, "someIdp", "marker0", new Date(), "someSp", "", "user-2");
 
-    aggregator.aggregateLogin(Arrays.asList(loginEntry, loginEntry2));
+    aggregator.aggregateLogin(Arrays.asList(loginEntry, loginEntry2, loginEntry3));
 
-    int rowCountAfter = cruncherJdbcTemplate.queryForInt(sqlRowCountAggregated);
-    assertEquals("Aggregation of 2 records should result in 1 added rows", rowCountBefore + 1, rowCountAfter);
-    int aggregatedCount = cruncherJdbcTemplate.queryForInt("select entrycount from aggregated_log_logins where idpentityname like 'marker0'");
-    assertEquals("Aggegrated records should count 2", 2, aggregatedCount);
+    int rowCount = cruncherJdbcTemplate.queryForInt("select count(*) from user_unique_logins_cache;");
+    assertEquals("Aggregation of 3 records should result in 2 added rows for the unique user table", 2, rowCount);
   }
-
-  /*
-   * This test is more useful with a debugger attached. But at least if no
-   * exception occur this is a good sign.
-   */
-  @Ignore
+  
   @Test
-  public void testConcurrency() throws InterruptedException {
-    for (int j = 0; j < 5; j++) {
-      List<Thread> threads = new ArrayList<Thread>();
-
-      for (int i = 0; i < 20; i++) {
-        Thread t = new Thread(new AggregatorTread(aggregator));
-        threads.add(t);
-        t.start();
-      }
-
-      for (Thread t : threads) {
-        t.join();
-      }
-    }
-  }
-}
-
-class AggregatorTread implements Runnable {
-  private final Aggregator aggregator;
-  
-  public AggregatorTread(final Aggregator aggregator) {
-    this.aggregator = aggregator;
-  }
-  
-  @Override
-  public void run() {
-    aggregator.run();
+  public void testUniqueLoginUpdateFromCache() {
+    Calendar now = new GregorianCalendar();
+    now.add(MONTH, -2);
+    
+    LoginEntry loginEntry = new LoginEntry(0L, "someIdp", "marker0", now.getTime(), "someSp", "", "user-1");
+    LoginEntry loginEntry2 = new LoginEntry(1L, "someIdp", "marker0", now.getTime(), "someSp", "", "user-1");
+    LoginEntry loginEntry3 = new LoginEntry(2L, "someIdp", "marker0", now.getTime(), "someSp", "", "user-2");
+    
+    aggregator.aggregateLogin(Arrays.asList(loginEntry, loginEntry2, loginEntry3));
+    
+    /* at this point the copy should not have been performed */
+    int rowCount = cruncherJdbcTemplate.queryForInt("select count(*) from user_unique_logins;");
+    assertEquals("unique user cache should have been updated to unique users table", 0, rowCount);
+    
+    now.add(MONTH, 3);
+    LoginEntry loginEntry4 = new LoginEntry(3L, "someIdp", "marker0", now.getTime(), "someSp", "", "user-2");
+    
+    aggregator.aggregateLogin(Arrays.asList(loginEntry4));
+    
+    /* now the original set of logins should be aggregated in the unique users login table */
+    rowCount = cruncherJdbcTemplate.queryForInt("select count(*) from user_unique_logins;");
+    assertEquals("unique user cache should have been updated to unique users table", 1, rowCount);
+    int entrycount  = cruncherJdbcTemplate.queryForInt("select entrycount from user_unique_logins where spentityid='someSp' and idpentityid='someIdp'");
+    assertEquals("entry count for unique users should be 2", 2, entrycount);
   }
 }
