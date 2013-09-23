@@ -60,7 +60,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
    * required.
    */
   private enum TimeSpan {
-    MONTH(12);
+    MONTH(12), WEEK(52), YEAR(1970);
     private final int code;
     private TimeSpan(int code) {
       this.code = code;
@@ -420,5 +420,14 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     Calendar calendar = new GregorianCalendar();
     calendar.setTime(currentDate);
     return calendar;
+  }
+
+  @Override
+  public long getTotalUniqueLogins(String spEntityId, Integer month, Integer year) {
+    String query = "select SUM(entrycount) " +
+    		"from user_unique_logins " +
+    		"where " +
+    		"spentityid=? and timespan=? and month=? and year=?";
+    return cruncherJdbcTemplate.queryForLong(query, spEntityId, TimeSpan.MONTH.getCode(), month, year);
   }
 }

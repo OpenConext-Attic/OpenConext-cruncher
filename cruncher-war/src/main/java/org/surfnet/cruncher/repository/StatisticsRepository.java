@@ -89,4 +89,6 @@ public interface StatisticsRepository {
   boolean uniqueUserLogonExists(String userId, Date loginDate, String spEntityId, String idpEntityId);
 
   void aggregateUniqueLoginsIfNeeded();
+
+  long getTotalUniqueLogins(String spEntityId, Integer month, Integer year);
 }

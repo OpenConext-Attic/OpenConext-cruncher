@@ -100,6 +100,9 @@ public class CruncherResource {
       result.addInstitutionLoginCount(institutionId, institutionCount);
       result.setTotalLogins(result.getTotalLogins() + institutionCount);
     }
+    
+    // add total unique users on this SP
+    result.setTotalUniqueLogins(statisticsRepository.getTotalUniqueLogins(spEntityId, month, year));
     return Response.ok(result).build();
   }
   
