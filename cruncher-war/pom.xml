@@ -167,7 +167,7 @@
     <dependency>
       <groupId>org.surfnet.coin</groupId>
       <artifactId>coin-api-serviceregistry-client</artifactId>
-      <version>3.6.2-SNAPSHOT</version>
+      <version>3.7.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
