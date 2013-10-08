@@ -25,6 +25,6 @@ cruncher.jdbc.username=cruncherrw
 cruncher.jdbc.password=??
 
 # Info for communication with the APIS Authorization Server
-authorizationServer.url=https\\\://apis.surfconext.nl/v1/tokeninfo
+authorizationServer.url=https://apis.surfconext.nl/v1/tokeninfo
 authorizationServer.key=??
 authorizationServer.secret=??
