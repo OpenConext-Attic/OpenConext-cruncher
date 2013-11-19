@@ -65,10 +65,6 @@ public class Aggregator {
   @Value("${aggregation.enabled}")
   private boolean enabled;
 
-  /*
-   * When a (runtime) exception occurs, the active bit is *not* set to 0, this means
-   * crunching is disabled until the original error is recovered
-   */
   public void run() {
     if (!enabled) {
       LOG.info("aggregation disabled, because aggregation.enabled=false");

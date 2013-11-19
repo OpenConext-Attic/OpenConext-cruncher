@@ -71,6 +71,10 @@ public class SpringConfiguration {
     dataSource.setUrl(env.getProperty("eb.jdbc.url"));
     dataSource.setUsername(env.getProperty("eb.jdbc.username"));
     dataSource.setPassword(env.getProperty("eb.jdbc.password"));
+    dataSource.setValidationQuery("SELECT 1");
+    dataSource.setValidationInterval(10000L);
+    dataSource.setTestOnBorrow(true);
+    dataSource.setTestOnReturn(true);
     return dataSource;
   }
   
@@ -81,6 +85,10 @@ public class SpringConfiguration {
     dataSource.setUrl(env.getProperty("cruncher.jdbc.url"));
     dataSource.setUsername(env.getProperty("cruncher.jdbc.username"));
     dataSource.setPassword(env.getProperty("cruncher.jdbc.password"));
+    dataSource.setValidationQuery("SELECT 1");
+    dataSource.setValidationInterval(10000L);
+    dataSource.setTestOnBorrow(true);
+    dataSource.setTestOnReturn(true);
     return dataSource;
   }
   
