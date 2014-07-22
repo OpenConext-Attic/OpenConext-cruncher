@@ -15,12 +15,12 @@
 #
 
 # The engineblock database settings
-eb.jdbc.url=jdbc:mysql://db._OPENCONEXT_DOMAIN_:3306/engineblock
+eb.jdbc.url=jdbc:mysql://localhost:3306/engineblock
 eb.jdbc.username=root
 eb.jdbc.password=c0n3xt
 
 # cruncher database settings
-cruncher.jdbc.url=jdbc:mysql://db._OPENCONEXT_DOMAIN_:3306/cruncher
+cruncher.jdbc.url=jdbc:mysql://localhost:3306/cruncher
 cruncher.jdbc.username=root
 cruncher.jdbc.password=c0n3xt
 
