@@ -29,7 +29,7 @@
   <name>Cruncher web application</name>
   <packaging>war</packaging>
   <properties>
-    <mysql-connector-java.version>5.1.31</mysql-connector-java.version>
+    <my.mysql-connector-java.version>5.1.31</my.mysql-connector-java.version>
   </properties>
 
   <build>
@@ -81,7 +81,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>${mysql-connector-java.version}</version>
+      <version>${my.mysql-connector-java.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -168,10 +168,6 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
     </dependency>
     <dependency>
       <groupId>org.surfnet.coin</groupId>
