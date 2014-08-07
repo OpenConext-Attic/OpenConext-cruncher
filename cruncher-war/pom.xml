@@ -28,6 +28,9 @@
   <artifactId>cruncher-war</artifactId>
   <name>Cruncher web application</name>
   <packaging>war</packaging>
+  <properties>
+    <mysql-connector-java.version>5.1.31</mysql-connector-java.version>
+  </properties>
 
   <build>
     <plugins>
@@ -74,6 +77,12 @@
     <dependency>
       <groupId>nl.iprofs.modules.context-logging</groupId>
       <artifactId>context-logging</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>${mysql-connector-java.version}</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.surfnet.coin</groupId>
